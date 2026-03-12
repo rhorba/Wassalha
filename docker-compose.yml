@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: wassalha_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: wassalha
+      POSTGRES_PASSWORD: wassalha_dev
+      POSTGRES_DB: wassalha
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wassalha -d wassalha"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
