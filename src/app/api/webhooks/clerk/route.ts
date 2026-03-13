@@ -3,6 +3,7 @@ import { Webhook } from "svix";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { getPrimaryEmail, getFullName } from "@/lib/utils/clerk-webhook";
 
 type ClerkUserEventData = {
   id: string;
@@ -16,18 +17,6 @@ type ClerkWebhookEvent = {
   type: "user.created" | "user.updated" | "user.deleted";
   data: ClerkUserEventData;
 };
-
-function getPrimaryEmail(data: ClerkUserEventData): string {
-  const primary = data.email_addresses.find(
-    (e) => e.id === data.primary_email_address_id
-  );
-  return primary?.email_address ?? data.email_addresses[0]?.email_address ?? "";
-}
-
-function getFullName(data: ClerkUserEventData): string | null {
-  const parts = [data.first_name, data.last_name].filter(Boolean);
-  return parts.length > 0 ? parts.join(" ") : null;
-}
 
 export async function POST(req: Request) {
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;

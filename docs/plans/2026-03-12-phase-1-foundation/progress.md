@@ -64,16 +64,40 @@
 
 - ✅ `.gitignore` updated — added `*.exe`, `*.dll`, `*.stackdump`, `.vscode/`, `.idea/`, `.eslintcache`, `.claude/`, `.pnpm-debug.log*`, `dist/`
 - ✅ `ngrok.exe` + `bash.exe.stackdump` + `tsconfig.tsbuildinfo` covered by new ignore rules
-- ⬜ Run `pnpm build` — verify it passes with real Clerk keys
-- ⬜ Run `pnpm lint` — verify no lint errors
-- ⬜ Run `pnpm test` — verify all tests pass
-- ⬜ Init git + push to `https://github.com/rhorba/Wassalha.git`
-- ⬜ Verify GitHub Actions CI passes
+- ✅ Run `pnpm build` — passed (5 pages generated, Clerk keys valid)
+- ✅ Run `pnpm lint` — passed (0 errors)
+- ✅ Run `pnpm test` — passed (1 test)
+- ✅ Init git + push to `https://github.com/rhorba/Wassalha.git` — 50 files, commit `49fdc29`
+- ✅ Verify GitHub Actions CI passes — run #1 passed (`feat: Phase 1 foundation`) https://github.com/rhorba/Wassalha/actions
 
 ## Phase 1 Complete
 
 All 14 tasks implemented. Code is correct. Blockers are configuration-only (no code changes needed).
 
+## Test Plan Execution — 2026-03-13
+
+### Automated Gates (all ✅)
+
+| Gate | Result |
+|------|--------|
+| `pnpm typecheck` | ✅ 0 errors |
+| `pnpm lint` | ✅ 0 errors |
+| `pnpm test:run` | ✅ 8 tests pass (3 files: example, webhook, schema) |
+| `pnpm build` | ✅ 6 pages generated (/, /_not-found, /dashboard, /api/webhooks/clerk, /sign-in, /sign-up) |
+
+### Code fixes applied during test execution
+
+1. **Extracted webhook helpers** — `getPrimaryEmail` + `getFullName` moved from route handler to `src/lib/utils/clerk-webhook.ts` (exported for testing). Route handler updated to import from there.
+2. **Created test files** — `src/lib/__tests__/webhook.test.ts` (6 tests) + `src/lib/__tests__/schema.test.ts` (1 test).
+3. **Fixed `/dashboard` route** — Dashboard page was at `(dashboard)/page.tsx` (resolves to `/`, conflicting with landing). Moved to `(dashboard)/dashboard/page.tsx` (resolves to `/dashboard` as intended by middleware + Clerk redirect).
+4. **Added Clerk post-auth redirects** — `afterSignInUrl="/dashboard"` + `afterSignUpUrl="/dashboard"` on `ClerkProvider` in root layout.
+
+### Remaining manual tests (requires running dev server + real Clerk account)
+
+- Section 3: Manual smoke tests (landing page, auth flow, route protection, webhook handler, shadcn/ui)
+- Section 2.1: DB migration via `pnpm db:migrate` (requires Docker running)
+- Section 4: GitHub Actions CI — verify latest run at https://github.com/rhorba/Wassalha/actions
+
 ## Resume Instructions
 
-Phase 1 is complete. Move to Phase 2 planning when blockers above are resolved.
+All automated gates are ✅. Push these fixes then run manual tests (Section 3 of test-plan.md). Once manual tests pass → run `/brainstorming` for Phase 2.
