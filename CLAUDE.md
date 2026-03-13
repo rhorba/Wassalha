@@ -47,13 +47,13 @@ Focus: Type-safety, performance, bilingual support (French/Darija), RBAC securit
 
 ## Implementation Status
 
-### 🔄 Phase 1 — Foundation (Week 1: March 17–21, 2026)
+### ✅ Phase 1 — Foundation (Week 1: March 17–21, 2026)
 
-Project scaffolding, DB schema, auth, CI/CD pipeline.
+Project scaffolding, DB schema, auth, CI/CD pipeline. **Complete.**
 
-### ⏳ Phase 2 — Address + Carrier Data (Week 2)
+### ✅ Phase 2 — Address + Carrier Data (Week 2)
 
-Address autocomplete, carrier database seeding, admin panel, unified adapter interface.
+Address autocomplete (Google Places), carrier DB seeding (5 carriers), admin CRUD panel, Zod validation, service layer, TanStack Query hooks. **Complete. 71 tests passing.**
 
 ### ⏳ Phase 3 — Comparison Engine (Week 3)
 
@@ -85,12 +85,12 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 
 | Feature | API | Frontend | Notes |
 |---------|-----|----------|-------|
-| Project Scaffolding | ⏳ | ⏳ | Next.js 15 + Tailwind 4 + shadcn/ui |
-| Authentication (Clerk/NextAuth) | ⏳ | ⏳ | Signup/login/roles |
-| DB Schema + Migrations | ⏳ | — | Drizzle ORM + PostgreSQL |
-| CI/CD Pipeline | ⏳ | ⏳ | GitHub Actions |
-| Address Autocomplete | ⏳ | ⏳ | Google Maps API |
-| Carrier Database + Admin CRUD | ⏳ | ⏳ | 5+ carriers seeded |
+| Project Scaffolding | ✅ | ✅ | Next.js 15 + Tailwind 4 + shadcn/ui |
+| Authentication (Clerk/NextAuth) | ✅ | ✅ | Clerk hosted UI + publicMetadata role + JWT template |
+| DB Schema + Migrations | ✅ | — | users + carriers + carrier_zones + carrier_pricing |
+| CI/CD Pipeline | ✅ | ✅ | GitHub Actions — lint + tsc + vitest + build |
+| Address Autocomplete | ✅ | ✅ | Google Places API (Morocco-restricted) + plain-text fallback |
+| Carrier Database + Admin CRUD | ✅ | ✅ | 5 carriers seeded, full admin panel with RBAC |
 | Carrier Comparison Engine | ⏳ | ⏳ | Ranking: cost, speed, reliability |
 | One-click Booking | ⏳ | ⏳ | Booking + confirmation email |
 | Commission Engine | ⏳ | ⏳ | Per-shipment commission calc |

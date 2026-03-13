@@ -1,10 +1,31 @@
+import { auth } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
+import Link from "next/link";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { sessionClaims } = await auth();
+  const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
+  const isAdmin = role === "admin";
+
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-zinc-200 px-6 py-4 flex items-center justify-between">
-        <span className="font-semibold text-zinc-900">Wassalha</span>
+        <div className="flex items-center gap-6">
+          <span className="font-semibold text-zinc-900">Wassalha</span>
+          <nav className="flex items-center gap-4 text-sm">
+            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">
+              Dashboard
+            </Link>
+            {isAdmin && (
+              <Link
+                href="/admin/carriers"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Carriers
+              </Link>
+            )}
+          </nav>
+        </div>
         <UserButton />
       </header>
       <main className="px-6 py-8">{children}</main>

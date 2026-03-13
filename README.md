@@ -18,8 +18,8 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 
 | Week | Sprint | Status | Deliverable |
 |------|--------|--------|-------------|
-| W1 | Foundation + Auth | ⏳ Planned | Auth working, DB migrated, CI/CD live |
-| W2 | Address + Carrier Data | ⏳ Planned | Address input + carrier CRUD working |
+| W1 | Foundation + Auth | ✅ Done | Auth working, DB migrated, CI/CD live |
+| W2 | Address + Carrier Data | ✅ Done | Address autocomplete + carrier CRUD + admin panel |
 | W3 | Comparison Engine | ⏳ Planned | User inputs origin/dest → sees ranked carriers |
 | W4 | Booking + Commission | ⏳ Planned | Full booking flow end-to-end |
 | W5 | Real-time Tracking | ⏳ Planned | Live tracking dashboard working |
@@ -31,13 +31,13 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 
 | Feature | API | Frontend | Priority |
 |---------|:---:|:--------:|----------|
-| Project scaffolding (Next.js 15 + Tailwind 4) | ⏳ | ⏳ | **W1** |
-| DB schema (Drizzle ORM + PostgreSQL) | ⏳ | — | **W1** |
-| Authentication (Clerk / NextAuth v5) | ⏳ | ⏳ | **W1** |
-| CI/CD pipeline (GitHub Actions) | ⏳ | ⏳ | **W1** |
-| Address autocomplete (Google Maps API) | ⏳ | ⏳ | **W2** |
-| Carrier database + admin CRUD | ⏳ | ⏳ | **W2** |
-| Unified carrier adapter interface | ⏳ | — | **W2** |
+| Project scaffolding (Next.js 15 + Tailwind 4) | ✅ | ✅ | **W1** |
+| DB schema (Drizzle ORM + PostgreSQL) | ✅ | — | **W1** |
+| Authentication (Clerk / NextAuth v5) | ✅ | ✅ | **W1** |
+| CI/CD pipeline (GitHub Actions) | ✅ | ✅ | **W1** |
+| Address autocomplete (Google Maps API) | ✅ | ✅ | **W2** |
+| Carrier database + admin CRUD | ✅ | ✅ | **W2** |
+| Unified carrier adapter interface | ⏳ | — | **W3** |
 | Comparison ranking algorithm | ⏳ | — | **W3** |
 | Comparison results UI | — | ⏳ | **W3** |
 | One-click booking flow | ⏳ | ⏳ | **W4** |
@@ -347,21 +347,21 @@ GET    /api/addresses/geocode       Geocode address to lat/lng
 
 ---
 
-## Database Schema (Planned)
+## Database Schema
 
-| Table | Description |
-|-------|-------------|
-| `users` | Retailer accounts (via Clerk or NextAuth) |
-| `carriers` | Delivery companies (Amana, CTM Express, etc.) |
-| `carrier_zones` | Coverage zones per carrier |
-| `carrier_pricing` | Pricing rules per carrier per zone |
-| `shipments` | Shipment records (origin, destination, status) |
-| `bookings` | Carrier booking details per shipment |
-| `commissions` | Commission transactions per booking |
-| `tracking_events` | Status change history per shipment |
-| `addresses` | Saved addresses for retailers |
-| `notifications` | WhatsApp/email notification log |
-| `audit_logs` | System audit trail |
+| Table | Status | Description |
+|-------|:------:|-------------|
+| `users` | ✅ Live | Retailer accounts synced from Clerk via webhook |
+| `carriers` | ✅ Live | Delivery companies (Amana, Chronopost, CTM, Fret Express, Colis Privé) |
+| `carrier_zones` | ✅ Live | Coverage zones per carrier |
+| `carrier_pricing` | ✅ Live | Pricing tiers per zone (stored in centimes) |
+| `shipments` | ⏳ W4 | Shipment records (origin, destination, status) |
+| `bookings` | ⏳ W4 | Carrier booking details per shipment |
+| `commissions` | ⏳ W4 | Commission transactions per booking |
+| `tracking_events` | ⏳ W5 | Status change history per shipment |
+| `addresses` | ⏳ W3 | Saved addresses for retailers |
+| `notifications` | ⏳ W7 | WhatsApp/email notification log |
+| `audit_logs` | ⏳ W8 | System audit trail |
 
 ---
 
