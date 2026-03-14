@@ -20,7 +20,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 |------|--------|--------|-------------|
 | W1 | Foundation + Auth | ✅ Done | Auth working, DB migrated, CI/CD live |
 | W2 | Address + Carrier Data | ✅ Done | Address autocomplete + carrier CRUD + admin panel |
-| W3 | Comparison Engine | ⏳ Planned | User inputs origin/dest → sees ranked carriers |
+| W3 | Comparison Engine | ✅ Done | Ranking algorithm live — users compare carriers by cost/speed/reliability |
 | W4 | Booking + Commission | ⏳ Planned | Full booking flow end-to-end |
 | W5 | Real-time Tracking | ⏳ Planned | Live tracking dashboard working |
 | W6 | Dashboard + Analytics | ⏳ Planned | Full analytics dashboard live |
@@ -37,9 +37,9 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | CI/CD pipeline (GitHub Actions) | ✅ | ✅ | **W1** |
 | Address autocomplete (Google Maps API) | ✅ | ✅ | **W2** |
 | Carrier database + admin CRUD | ✅ | ✅ | **W2** |
-| Unified carrier adapter interface | ⏳ | — | **W3** |
-| Comparison ranking algorithm | ⏳ | — | **W3** |
-| Comparison results UI | — | ⏳ | **W3** |
+| Unified carrier adapter interface | ✅ | — | **W3** |
+| Comparison ranking algorithm | ✅ | — | **W3** |
+| Comparison results UI | — | ✅ | **W3** |
 | One-click booking flow | ⏳ | ⏳ | **W4** |
 | Commission calculation engine | ⏳ | — | **W4** |
 | Booking confirmation + email | ⏳ | ⏳ | **W4** |
