@@ -16,6 +16,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">
               Dashboard
             </Link>
+            <Link href="/compare" className="text-muted-foreground hover:text-foreground">
+              Compare
+            </Link>
             {isAdmin && (
               <Link
                 href="/admin/carriers"

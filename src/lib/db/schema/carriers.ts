@@ -1,6 +1,7 @@
 import {
   boolean,
   integer,
+  numeric,
   pgTable,
   text,
   timestamp,
@@ -14,6 +15,8 @@ export const carriers = pgTable("carriers", {
   slug: text("slug").notNull().unique(),
   logoUrl: text("logo_url"),
   isActive: boolean("is_active").notNull().default(true),
+  reliabilityScore: integer("reliability_score").notNull().default(80),
+  // 0–100, admin-set. Default 80 = neutral starting point.
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -38,6 +41,10 @@ export const carrierPricing = pgTable("carrier_pricing", {
   priceMad: integer("price_mad").notNull(), // centimes — 1500 = 15.00 MAD
   deliveryDaysMin: integer("delivery_days_min").notNull(),
   deliveryDaysMax: integer("delivery_days_max").notNull(),
+  codFeeMad: integer("cod_fee_mad"),
+  // flat COD surcharge in centimes, nullable
+  codFeePercent: numeric("cod_fee_percent", { precision: 5, scale: 2 }),
+  // percentage of COD amount, e.g. "1.50" = 1.5%, nullable
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

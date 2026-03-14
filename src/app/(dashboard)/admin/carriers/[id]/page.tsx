@@ -10,6 +10,7 @@ interface CarrierWithZones {
   slug: string;
   logoUrl: string | null;
   isActive: boolean;
+  reliabilityScore: number;
   createdAt: Date;
   updatedAt: Date;
   zones: (CarrierZone & { pricing: CarrierPricing[] })[];

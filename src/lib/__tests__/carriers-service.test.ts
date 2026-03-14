@@ -38,6 +38,7 @@ const mockCarrier = {
   slug: "amana",
   logoUrl: null,
   isActive: true,
+  reliabilityScore: 80,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

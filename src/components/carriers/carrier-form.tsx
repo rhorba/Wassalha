@@ -26,7 +26,12 @@ export function CarrierForm({ carrier }: CarrierFormProps) {
   } = useForm<CreateCarrierInput>({
     resolver: zodResolver(CreateCarrierSchema),
     defaultValues: carrier
-      ? { name: carrier.name, slug: carrier.slug, logoUrl: carrier.logoUrl ?? undefined }
+      ? {
+          name: carrier.name,
+          slug: carrier.slug,
+          logoUrl: carrier.logoUrl ?? undefined,
+          reliabilityScore: carrier.reliabilityScore ?? 80,
+        }
       : undefined,
   });
 
@@ -58,6 +63,19 @@ export function CarrierForm({ carrier }: CarrierFormProps) {
         <Label htmlFor="logoUrl">Logo URL (optional)</Label>
         <Input id="logoUrl" {...register("logoUrl")} placeholder="https://..." />
         {errors.logoUrl && <p className="text-sm text-destructive">{errors.logoUrl.message}</p>}
+      </div>
+
+      <div className="space-y-1">
+        <Label htmlFor="reliabilityScore">Reliability Score (0–100)</Label>
+        <Input
+          id="reliabilityScore"
+          type="number"
+          {...register("reliabilityScore", { valueAsNumber: true })}
+          placeholder="80"
+        />
+        {errors.reliabilityScore && (
+          <p className="text-sm text-destructive">{errors.reliabilityScore.message}</p>
+        )}
       </div>
 
       <div className="flex gap-2">

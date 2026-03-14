@@ -11,6 +11,10 @@ export const CreateCarrierSchema = z.object({
     (v) => (v === "" ? undefined : v),
     z.string().url("Must be a valid URL").nullable().optional()
   ),
+  reliabilityScore: z.preprocess(
+    (v) => (typeof v === "number" && isNaN(v) ? undefined : v),
+    z.number().int().min(0).max(100).optional()
+  ),
 });
 
 export const UpdateCarrierSchema = CreateCarrierSchema.partial();
@@ -27,6 +31,12 @@ export const CreatePricingSchema = z
     priceMad: z.number().int().min(1, "Price must be >= 1 centime"),
     deliveryDaysMin: z.number().int().min(1),
     deliveryDaysMax: z.number().int().min(1),
+    codFeeMad: z.number().int().min(0).nullable().optional(),
+    codFeePercent: z
+      .string()
+      .regex(/^\d+(\.\d{1,2})?$/, "Must be a decimal like 1.50")
+      .nullable()
+      .optional(),
   })
   .refine(
     (data) =>
@@ -38,9 +48,44 @@ export const CreatePricingSchema = z
   .refine((data) => data.deliveryDaysMax >= data.deliveryDaysMin, {
     message: "Max delivery days must be >= min",
     path: ["deliveryDaysMax"],
-  });
+  })
+  .refine(
+    (data) =>
+      data.codFeePercent === null ||
+      data.codFeePercent === undefined ||
+      parseFloat(data.codFeePercent) <= 100,
+    { message: "COD fee percent must be between 0 and 100", path: ["codFeePercent"] }
+  );
 
 export type CreateCarrierInput = z.infer<typeof CreateCarrierSchema>;
 export type UpdateCarrierInput = z.infer<typeof UpdateCarrierSchema>;
 export type CreateZoneInput = z.infer<typeof CreateZoneSchema>;
 export type CreatePricingInput = z.infer<typeof CreatePricingSchema>;
+
+// ── Comparison ────────────────────────────────────────────────────────────────
+
+export const CompareInputSchema = z.object({
+  originCity:      z.string().min(2, "Origin city required"),
+  destinationCity: z.string().min(2, "Destination city required"),
+  weightG:         z.number().int().min(1, "Weight must be at least 1g"),
+  codAmountMad:    z.number().int().min(0),
+  mode:            z.enum(["cheapest", "balanced", "fastest"]).default("balanced"),
+});
+
+export type CompareInput = z.infer<typeof CompareInputSchema>;
+
+export type CarrierResult = {
+  carrierId:        string;
+  name:             string;
+  logoUrl:          string | null;
+  totalCostMad:     number;
+  deliveryDaysMin:  number;
+  deliveryDaysMax:  number;
+  reliabilityScore: number;
+  score:            number;
+  codFeeBreakdown: {
+    flatMad:    number;
+    percentFee: number;
+    total:      number;
+  };
+};

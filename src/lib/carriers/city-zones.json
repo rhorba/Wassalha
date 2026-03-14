@@ -1,0 +1,317 @@
+{
+  "casablanca": {
+    "amana": "ZA",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "casablanca-anfa": {
+    "amana": "ZA",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "dar el beida": {
+    "amana": "ZA",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "mohammedia": {
+    "amana": "ZA",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "rabat": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "sale": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "temara": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "kenitra": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "marrakech": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "agadir": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "essaouira": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "fes": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "meknes": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "ifrane": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "tanger": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "tetouan": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "larache": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "oujda": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "nador": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "berkane": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "el jadida": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "safi": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "khouribga": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "beni mellal": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "khenifra": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "errachidia": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "laayoune": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "dakhla": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "ouarzazate": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "zagora": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "al hoceima": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "chefchaouen": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "tangier": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "tanger-tetouan-al hoceima": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "fez": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "fes-meknes": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "meknes": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "marrakesh": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "marrakech-safi": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "rabat-sale-kenitra": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "sale": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "agadir-ida ou tanane": {
+    "amana": "ZB",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "souss-massa": {
+    "amana": "ZB",
+    "chronopost": "STD",
+    "ctm": "ELO",
+    "fret-express": "NAT",
+    "colis-prive": "PER"
+  },
+  "grand casablanca": {
+    "amana": "ZA",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  },
+  "casablanca-settat": {
+    "amana": "ZA",
+    "chronopost": "EXP",
+    "ctm": "AXE",
+    "fret-express": "NAT",
+    "colis-prive": "URB"
+  }
+}

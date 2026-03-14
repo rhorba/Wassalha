@@ -15,6 +15,13 @@
       "when": 1773387863536,
       "tag": "0001_lovely_swarm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773473790043,
+      "tag": "0002_unknown_loners",
+      "breakpoints": true
     }
   ]
 }
