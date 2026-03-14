@@ -55,13 +55,16 @@ Project scaffolding, DB schema, auth, CI/CD pipeline. **Complete.**
 
 Address autocomplete (Google Places), carrier DB seeding (5 carriers), admin CRUD panel, Zod validation, service layer, TanStack Query hooks. **Complete. 71 tests passing.**
 
-### ⏳ Phase 3 — Comparison Engine (Week 3)
+### ✅ Phase 3 — Comparison Engine (Week 3)
 
-Ranking algorithm, comparison API, results UI with filter/sort.
+Ranking algorithm (cost/speed/reliability with mode weights), `POST /api/carriers/compare`, city-zone static mapping, comparison service, filter/sort UI, TanStack Query mutation hook. **Complete. 78 tests passing.**
+
+### ⏳ Phase 4 — Booking + Commission (Week 4)
 
 ### ⏳ Phase 4 — Booking + Commission (Week 4)
 
 One-click booking, shipment records, commission calculation, confirmation flow.
+
 
 ### ⏳ Phase 5 — Real-time Tracking (Week 5)
 
@@ -91,7 +94,7 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 | CI/CD Pipeline | ✅ | ✅ | GitHub Actions — lint + tsc + vitest + build |
 | Address Autocomplete | ✅ | ✅ | Google Places API (Morocco-restricted) + plain-text fallback |
 | Carrier Database + Admin CRUD | ✅ | ✅ | 5 carriers seeded, full admin panel with RBAC |
-| Carrier Comparison Engine | ⏳ | ⏳ | Ranking: cost, speed, reliability |
+| Carrier Comparison Engine | ✅ | ✅ | Ranking: cost, speed, reliability — 78 tests |
 | One-click Booking | ⏳ | ⏳ | Booking + confirmation email |
 | Commission Engine | ⏳ | ⏳ | Per-shipment commission calc |
 | Real-time GPS Tracking | ⏳ | ⏳ | Supabase Realtime + Mapbox |
