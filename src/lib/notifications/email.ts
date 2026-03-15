@@ -2,8 +2,6 @@ import { Resend } from "resend";
 import type { Shipment, Carrier } from "@/lib/db/schema";
 import type { CommissionBreakdown } from "@/lib/services/commission";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 interface BookingEmailParams {
   retailerEmail: string;
   retailerName:  string;
@@ -19,6 +17,13 @@ export async function sendBookingConfirmationEmail(
     console.warn("[email] No retailer email — skipping confirmation email");
     return;
   }
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[email] RESEND_API_KEY not set — skipping confirmation email");
+    return;
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   const costMad       = (params.shipment.shippingCostMad / 100).toFixed(2);
   const commissionMad = (params.commission.totalCommissionMad / 100).toFixed(2);
