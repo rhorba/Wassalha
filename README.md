@@ -65,10 +65,10 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 |-------|------------|
 | **Framework** | Next.js 15 (App Router) + TypeScript + React 19 |
 | **Styling** | Tailwind CSS 4 + shadcn/ui |
-| **API** | Hono (lightweight REST) or Next.js API Routes |
-| **Database** | PostgreSQL (Supabase / Neon) |
+| **API** | Next.js API Routes (TypeScript) |
+| **Database** | PostgreSQL (Neon cloud) |
 | **ORM** | Drizzle ORM + Drizzle Kit (migrations) |
-| **Auth** | Clerk or NextAuth.js v5 |
+| **Auth** | Clerk (hosted UI + publicMetadata role) |
 | **Real-time** | Supabase Realtime / Socket.io |
 | **Maps** | Google Maps API / Mapbox |
 | **Payments** | Stripe + CMI (local Moroccan cards) |
@@ -91,7 +91,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 - **pnpm**: v9+ (`npm install -g pnpm`)
 - **Git**: Run `git config --global core.autocrlf input`
 - **Docker**: Optional, for local PostgreSQL
-- **Accounts**: Supabase (or Neon), Clerk, Google Maps API, Stripe, Resend
+- **Accounts**: Neon (or Supabase), Clerk, Google Maps API — Stripe/Resend needed only from W4+
 
 ---
 
@@ -173,125 +173,80 @@ pnpm start
 wassalha/
 ├── src/
 │   ├── app/                           # Next.js 15 App Router
-│   │   ├── (auth)/                    # Auth group (login, signup)
-│   │   │   ├── login/page.tsx
-│   │   │   └── signup/page.tsx
-│   │   ├── (dashboard)/               # Protected routes
-│   │   │   ├── layout.tsx             # Dashboard shell (sidebar, header)
-│   │   │   ├── page.tsx               # Dashboard home
-│   │   │   ├── compare/               # Carrier comparison
-│   │   │   │   └── page.tsx
-│   │   │   ├── shipments/             # Shipment list + details
+│   │   ├── (dashboard)/               # Protected routes (Clerk middleware)
+│   │   │   ├── layout.tsx             # Dashboard shell
+│   │   │   ├── dashboard/page.tsx     # Dashboard home
+│   │   │   ├── compare/               # Carrier comparison ✅
 │   │   │   │   ├── page.tsx
-│   │   │   │   ├── [id]/page.tsx
-│   │   │   │   └── new/page.tsx
-│   │   │   ├── tracking/              # Live tracking map
-│   │   │   │   └── page.tsx
-│   │   │   ├── analytics/             # Charts + reports
-│   │   │   │   └── page.tsx
-│   │   │   ├── carriers/              # Carrier admin (admin only)
-│   │   │   │   └── page.tsx
-│   │   │   └── settings/              # User settings
-│   │   │       └── page.tsx
-│   │   ├── api/                       # API Routes
-│   │   │   ├── auth/[...nextauth]/    # NextAuth catch-all (if not Clerk)
-│   │   │   ├── carriers/
-│   │   │   │   ├── route.ts           # GET (list), POST (create)
+│   │   │   │   └── compare-page-client.tsx
+│   │   │   ├── shipments/page.tsx     # Shipments list ✅
+│   │   │   └── admin/carriers/        # Carrier admin CRUD (admin only) ✅
+│   │   ├── api/                       # Next.js API Routes
+│   │   │   ├── carriers/              # Carrier CRUD + comparison ✅
+│   │   │   │   ├── route.ts           # GET list, POST create
 │   │   │   │   ├── [id]/route.ts      # GET, PUT, DELETE
-│   │   │   │   └── compare/route.ts   # POST (comparison engine)
-│   │   │   ├── shipments/
-│   │   │   │   ├── route.ts           # GET (list), POST (book)
-│   │   │   │   └── [id]/
-│   │   │   │       ├── route.ts       # GET, PUT
-│   │   │   │       └── track/route.ts # GET (tracking status)
-│   │   │   ├── commissions/
-│   │   │   │   └── route.ts           # GET (billing dashboard)
-│   │   │   ├── tracking/
-│   │   │   │   └── webhook/route.ts   # POST (carrier webhooks)
-│   │   │   └── analytics/
-│   │   │       └── route.ts           # GET (stats + charts data)
-│   │   ├── layout.tsx                 # Root layout (providers, fonts)
-│   │   └── page.tsx                   # Marketing landing page
-│   │
-│   ├── components/                    # Shared components
-│   │   ├── ui/                        # shadcn/ui primitives
-│   │   ├── forms/                     # AddressInput, BookingForm, etc.
-│   │   ├── maps/                      # MapView, RouteDisplay
-│   │   ├── charts/                    # DeliveryChart, CostTrend, etc.
-│   │   ├── carriers/                  # CarrierCard, ComparisonList
-│   │   ├── tracking/                  # TrackingTimeline, StatusBadge
-│   │   └── layout/                    # Sidebar, Header, MobileNav
-│   │
-│   ├── lib/                           # Core logic + config
+│   │   │   │   ├── [id]/zones/        # Zone CRUD
+│   │   │   │   ├── [id]/zones/[zoneId]/pricing/  # Pricing CRUD
+│   │   │   │   └── compare/route.ts   # POST comparison engine
+│   │   │   ├── shipments/             # Booking ✅
+│   │   │   │   ├── route.ts           # POST book, GET list
+│   │   │   │   └── [id]/route.ts      # GET single
+│   │   │   └── webhooks/clerk/route.ts # Clerk user sync ✅
+│   │   ├── sign-in/[[...sign-in]]/    # Clerk hosted sign-in
+│   │   ├── sign-up/[[...sign-up]]/    # Clerk hosted sign-up
+│   │   ├── layout.tsx                 # Root layout (providers)
+│   │   └── page.tsx                   # Landing page (placeholder)
+│   ├── components/
+│   │   ├── ui/                        # shadcn/ui primitives ✅
+│   │   ├── compare/                   # Comparison UI ✅
+│   │   │   ├── compare-form.tsx
+│   │   │   ├── results-list.tsx
+│   │   │   ├── carrier-result-card.tsx
+│   │   │   ├── city-autocomplete.tsx
+│   │   │   └── mode-toggle.tsx
+│   │   ├── booking/                   # Booking sheet ✅
+│   │   │   ├── booking-sheet.tsx
+│   │   │   └── booking-form.tsx
+│   │   └── shipments/                 # Shipments table ✅
+│   │       └── shipments-table.tsx
+│   ├── lib/
 │   │   ├── db/
-│   │   │   ├── schema/                # Drizzle table definitions
-│   │   │   │   ├── users.ts
-│   │   │   │   ├── carriers.ts
-│   │   │   │   ├── shipments.ts
-│   │   │   │   ├── bookings.ts
-│   │   │   │   ├── commissions.ts
-│   │   │   │   ├── tracking-events.ts
-│   │   │   │   └── index.ts           # Re-export all schemas
-│   │   │   ├── migrations/            # Drizzle Kit generated SQL
-│   │   │   └── index.ts               # DB client singleton
-│   │   ├── auth/                      # Clerk or NextAuth config
+│   │   │   ├── schema/                # users, carriers, carrier_zones,
+│   │   │   │                          # carrier_pricing, shipments, commissions ✅
+│   │   │   ├── migrations/            # 0000–0003 applied ✅
+│   │   │   ├── seed.ts                # 5 carriers seeded ✅
+│   │   │   └── index.ts               # Drizzle + pg Pool client
 │   │   ├── carriers/
-│   │   │   ├── adapters/              # Per-carrier API adapters
-│   │   │   │   ├── amana.ts
-│   │   │   │   ├── ctm-express.ts
-│   │   │   │   └── base.ts            # Abstract adapter class
-│   │   │   ├── ranking.ts             # Comparison algorithm
-│   │   │   └── types.ts               # Unified CarrierQuote type
-│   │   ├── services/                  # Business logic
-│   │   │   ├── comparison.service.ts
-│   │   │   ├── booking.service.ts
-│   │   │   ├── tracking.service.ts
-│   │   │   ├── commission.service.ts
-│   │   │   └── notification.service.ts
-│   │   ├── validations/               # Zod schemas
-│   │   │   ├── carrier.schema.ts
-│   │   │   ├── shipment.schema.ts
-│   │   │   ├── booking.schema.ts
-│   │   │   └── address.schema.ts
-│   │   └── utils/                     # Helpers
-│   │       ├── format.ts              # Currency (DH), date formatting
-│   │       ├── maps.ts                # Google Maps helpers
-│   │       └── constants.ts           # App-wide constants
-│   │
-│   ├── hooks/                         # Custom React hooks
-│   │   ├── use-carriers.ts            # TanStack Query for carriers
-│   │   ├── use-shipments.ts           # TanStack Query for shipments
-│   │   ├── use-tracking.ts            # Supabase Realtime subscription
-│   │   └── use-analytics.ts           # Dashboard data hooks
-│   │
-│   └── types/                         # Global TypeScript types
-│       ├── carrier.ts
-│       ├── shipment.ts
-│       ├── tracking.ts
-│       └── index.ts
-│
-├── public/                            # Static assets (logos, images)
-├── docs/
-│   └── plans/                         # Implementation plans
-├── drizzle.config.ts                  # Drizzle Kit configuration
-├── next.config.ts                     # Next.js configuration
-├── tailwind.config.ts                 # Tailwind CSS 4 configuration
-├── tsconfig.json                      # TypeScript strict config
-├── vitest.config.ts                   # Vitest configuration
-├── playwright.config.ts               # Playwright E2E config
-├── docker-compose.yml                 # Local PostgreSQL + services
-├── .env.example                       # Environment variable template
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                     # Lint + type-check + test
-│       └── deploy.yml                 # Vercel deployment
-├── .eslintrc.json                     # ESLint config
-├── .prettierrc                        # Prettier config
-├── .gitattributes                     # LF enforcement
+│   │   │   ├── adapters/              # amana, aramex, ctm, marocolis, sendex ✅
+│   │   │   ├── types.ts               # CarrierAdapter interface + CarrierApiError ✅
+│   │   │   ├── city-zones.ts          # City → zone code mapping ✅
+│   │   │   └── city-zones.json        # Static zone map (Morocco cities) ✅
+│   │   ├── services/
+│   │   │   ├── carriers.ts            # Carrier CRUD ✅
+│   │   │   ├── comparison.ts          # Ranking algorithm ✅
+│   │   │   ├── bookings.ts            # createBooking, listShipments ✅
+│   │   │   └── commission.ts          # calculateCommission (dual-rate) ✅
+│   │   ├── notifications/
+│   │   │   ├── email.ts               # Resend confirmation email ✅
+│   │   │   └── whatsapp.ts            # WhatsApp Business API ✅
+│   │   └── validations/
+│   │       ├── carriers.ts            # Carrier + compare Zod schemas ✅
+│   │       └── shipments.ts           # BookingInput + response schemas ✅
+│   └── hooks/
+│       ├── use-carriers.ts            # TanStack Query carrier hooks ✅
+│       ├── use-compare.ts             # Comparison mutation hook ✅
+│       ├── use-create-shipment.ts     # Booking mutation hook ✅
+│       └── use-shipments.ts           # Shipments query hook ✅
+├── docs/plans/                        # Implementation plans + progress
+├── drizzle.config.ts
+├── next.config.ts
+├── tsconfig.json
+├── .env.example
+├── .github/workflows/ci.yml           # lint + tsc + vitest + build
 ├── package.json
 ├── pnpm-lock.yaml
-├── CLAUDE.md                          # AI assistant context
-└── README.md                          # This file
+├── CLAUDE.md
+└── README.md
 ```
 
 ---

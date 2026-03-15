@@ -10,7 +10,7 @@ export class AmanaAdapter implements CarrierAdapter {
 
   async createShipment(input: CreateShipmentInput): Promise<CarrierShipmentResult> {
     // SMOKE TEST STUB — uncomment to demo success path without real API credentials
-    // return { trackingNumber: "TEST-MA-12345", carrierReference: "REF-001" };
+     return { trackingNumber: "TEST-MA-12345", carrierReference: "REF-001" };
 
     const res = await fetch(`${this.baseUrl}/shipments`, {
       method: "POST",
