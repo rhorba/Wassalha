@@ -352,14 +352,12 @@ GET    /api/addresses/geocode       Geocode address to lat/lng
 | Table | Status | Description |
 |-------|:------:|-------------|
 | `users` | ✅ Live | Retailer accounts synced from Clerk via webhook |
-| `carriers` | ✅ Live | Delivery companies (Amana, Chronopost, CTM, Fret Express, Colis Privé) |
+| `carriers` | ✅ Live | 5 carriers seeded (Amana, Aramex, CTM, Marocolis, Sendex) |
 | `carrier_zones` | ✅ Live | Coverage zones per carrier |
 | `carrier_pricing` | ✅ Live | Pricing tiers per zone (stored in centimes) |
-| `shipments` | ⏳ W4 | Shipment records (origin, destination, status) |
-| `bookings` | ⏳ W4 | Carrier booking details per shipment |
-| `commissions` | ⏳ W4 | Commission transactions per booking |
+| `shipments` | ✅ Live | Shipment records — status, recipient, tracking number, COD amount |
+| `commissions` | ✅ Live | Per-shipment commission (10% shipping + 1.5% COD) |
 | `tracking_events` | ⏳ W5 | Status change history per shipment |
-| `addresses` | ⏳ W3 | Saved addresses for retailers |
 | `notifications` | ⏳ W7 | WhatsApp/email notification log |
 | `audit_logs` | ⏳ W8 | System audit trail |
 
@@ -367,23 +365,31 @@ GET    /api/addresses/geocode       Geocode address to lat/lng
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|:--------:|-------------|
-| `DATABASE_URL` | ✅ | PostgreSQL connection string |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | ✅ | Clerk public key |
-| `CLERK_SECRET_KEY` | ✅ | Clerk secret key |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | ✅ | Google Maps API key |
-| `STRIPE_SECRET_KEY` | ✅ | Stripe secret (commission billing) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ✅ | Stripe public key |
-| `RESEND_API_KEY` | ✅ | Resend email API key |
-| `WHATSAPP_API_TOKEN` | W5+ | WhatsApp Business API token |
-| `WHATSAPP_PHONE_ID` | W5+ | WhatsApp phone number ID |
-| `NEXT_PUBLIC_SUPABASE_URL` | W5+ | Supabase project URL |
+| Variable | When needed | Description |
+|----------|:-----------:|-------------|
+| `DATABASE_URL` | ✅ Now | PostgreSQL connection string |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | ✅ Now | Clerk public key |
+| `CLERK_SECRET_KEY` | ✅ Now | Clerk secret key |
+| `CLERK_WEBHOOK_SECRET` | ✅ Now | Clerk webhook signing secret |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | ✅ Now | Google Maps API key (address autocomplete) |
+| `RESEND_API_KEY` | W4+ | Resend email API key — booking confirmation emails |
+| `RESEND_FROM_EMAIL` | W4+ | Sender address (use `onboarding@resend.dev` until domain verified) |
+| `AMANA_API_URL` / `AMANA_API_KEY` / `AMANA_ACCOUNT_ID` | W4+ | Amana Maroc carrier credentials |
+| `ARAMEX_API_URL` / `ARAMEX_USERNAME` / `ARAMEX_PASSWORD` / `ARAMEX_ACCOUNT_NUMBER` / `ARAMEX_ACCOUNT_PIN` | W4+ | Aramex carrier credentials |
+| `CTM_API_URL` / `CTM_API_KEY` | W4+ | CTM Messagerie carrier credentials |
+| `MAROCOLIS_API_URL` / `MAROCOLIS_CLIENT_ID` / `MAROCOLIS_CLIENT_SECRET` | W4+ | Marocolis carrier credentials |
+| `SENDEX_API_URL` / `SENDEX_API_TOKEN` | W4+ | Sendex carrier credentials |
+| `WHATSAPP_API_TOKEN` | W7+ | WhatsApp Business API token (Meta) |
+| `WHATSAPP_PHONE_ID` | W7+ | WhatsApp phone number ID |
+| `WHATSAPP_TEMPLATE_NAME` | W7+ | Approved message template name |
+| `NEXT_PUBLIC_SUPABASE_URL` | W5+ | Supabase project URL (real-time tracking) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | W5+ | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | W5+ | Supabase service role key |
-| `NEXT_PUBLIC_MAPBOX_TOKEN` | W5+ | Mapbox access token |
-| `NEXT_PUBLIC_POSTHOG_KEY` | W6+ | PostHog project key |
-| `SENTRY_DSN` | W8 | Sentry error tracking DSN |
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | W5+ | Mapbox access token (route visualization) |
+| `STRIPE_SECRET_KEY` | W6+ | Stripe secret (commission billing invoices) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | W6+ | Stripe public key |
+| `NEXT_PUBLIC_POSTHOG_KEY` | W6+ | PostHog analytics key |
+| `SENTRY_DSN` | W8+ | Sentry error tracking DSN |
 
 ---
 
