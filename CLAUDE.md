@@ -15,17 +15,18 @@ Focus: Type-safety, performance, bilingual support (French/Darija), RBAC securit
 
 ## Tech Stack
 - **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS 4, shadcn/ui, React 19.
-- **API Layer**: Hono (lightweight REST API) or Next.js API Routes.
-- **Database**: PostgreSQL (Supabase or Neon) + Drizzle ORM.
-- **Auth**: Clerk or NextAuth.js v5.
-- **Real-time**: Supabase Realtime or Socket.io for live tracking.
-- **Maps**: Google Maps API or Mapbox for address autocomplete + route visualization.
-- **Payments**: Stripe (commission billing) + CMI (local Moroccan cards).
-- **Email/Notifications**: Resend (email) + WhatsApp Business API.
+- **API Layer**: Next.js API Routes (TypeScript). Hono deferred — not in use.
+- **Database**: PostgreSQL (Neon cloud) + Drizzle ORM.
+- **Auth**: Clerk (hosted UI + publicMetadata role + JWT template). NextAuth dropped.
+- **Real-time**: Supabase Realtime (Phase 5 — not yet implemented).
+- **Maps**: Google Maps API (address autocomplete, Morocco-restricted) + Mapbox (Phase 5 route visualization).
+- **Payments**: Stripe (Phase 6 — commission billing invoices). Not yet integrated.
+- **Email**: Resend (Phase 4 — booking confirmation). Lazy-initialized, skipped if key missing.
+- **Notifications**: WhatsApp Business API (Phase 7 — recipient SMS). Not yet integrated.
 - **Deployment**: Vercel (frontend) + Railway or Fly.io (backend services).
-- **CI/CD**: GitHub Actions.
-- **Monitoring**: Sentry (errors) + PostHog (analytics).
-- **Build**: pnpm (global package manager).
+- **CI/CD**: GitHub Actions — lint + tsc + vitest + build on every push.
+- **Monitoring**: Sentry (Phase 8) + PostHog (Phase 6). Not yet integrated.
+- **Build**: pnpm v9+ (global package manager).
 
 ## Development Commands
 - `pnpm dev` — Start full-stack dev server (Next.js).
@@ -103,69 +104,99 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 | WhatsApp Notifications | ⏳ | ⏳ | WhatsApp Business API |
 | Beta Launch (20 retailers) | ⏳ | ⏳ | Feedback loop active |
 
-### 📊 Codebase Metrics (Target)
+### 📊 Codebase Metrics
 
-**Full-Stack (TypeScript):**
-- Drizzle schema: ~10 tables (users, carriers, carrier_zones, carrier_pricing, shipments, bookings, commissions, addresses, tracking_events, notifications)
-- API routes: ~15 endpoints
-- React components: ~25+ (pages, UI, forms, dashboards)
-- Drizzle migrations: incremental per sprint
+**Current (Phase 4 complete):**
+- Drizzle schema: 6 tables live — users, carriers, carrier_zones, carrier_pricing, shipments, commissions
+- Migrations: 4 applied (0000–0003)
+- API routes: 10 endpoints live
+- React components: ~15 built
+- Tests: 99 passing
 
-**Database tables (planned):** users, carriers, carrier_zones, carrier_pricing, shipments, bookings, commissions, addresses, tracking_events, notifications, audit_logs
+**Planned (Phases 5–8):**
+- Additional tables: tracking_events, notifications, audit_logs
+- No separate `bookings` table — booking data lives in `shipments`
+- Target API routes: ~15 total
+- Target components: ~25+
 
 ---
 
-### 📦 Project Structure
+### 📦 Project Structure (actual — Phase 4)
 
 ```
 wassalha/
 ├── src/
 │   ├── app/                           # Next.js 15 App Router
-│   │   ├── (auth)/                    # Auth routes (login, signup)
-│   │   ├── (dashboard)/               # Protected dashboard routes
-│   │   │   ├── shipments/             # Shipment management
-│   │   │   ├── compare/               # Carrier comparison
-│   │   │   ├── tracking/              # Live tracking
-│   │   │   ├── analytics/             # Dashboard + charts
-│   │   │   ├── carriers/              # Carrier admin (admin only)
-│   │   │   └── settings/              # User settings
-│   │   ├── api/                       # API Routes (or Hono mount)
-│   │   │   ├── auth/                  # Auth endpoints
-│   │   │   ├── carriers/              # Carrier CRUD + comparison
-│   │   │   ├── shipments/             # Booking + shipment mgmt
-│   │   │   ├── tracking/              # Tracking webhooks + polling
-│   │   │   ├── commissions/           # Commission calculations
-│   │   │   └── webhooks/              # Carrier webhook receivers
-│   │   ├── layout.tsx                 # Root layout
-│   │   └── page.tsx                   # Landing page
-│   ├── components/                    # Shared React components
-│   │   ├── ui/                        # shadcn/ui components
-│   │   ├── forms/                     # Form components
-│   │   ├── maps/                      # Map components
-│   │   └── charts/                    # Chart components
-│   ├── lib/                           # Utilities and configs
-│   │   ├── db/                        # Drizzle config + schema
-│   │   │   ├── schema/                # Table definitions
-│   │   │   ├── migrations/            # Drizzle Kit migrations
-│   │   │   └── index.ts               # DB client
-│   │   ├── auth/                      # Auth config (Clerk/NextAuth)
-│   │   ├── carriers/                  # Carrier adapter pattern
-│   │   │   ├── adapters/              # Per-carrier API adapters
-│   │   │   └── types.ts               # Unified carrier interface
-│   │   ├── services/                  # Business logic layer
-│   │   ├── utils/                     # Helper functions
-│   │   └── validations/               # Zod schemas
-│   ├── hooks/                         # Custom React hooks
-│   └── types/                         # Global TypeScript types
-├── public/                            # Static assets
-├── drizzle.config.ts                  # Drizzle Kit config
-├── next.config.ts                     # Next.js config
-├── tailwind.config.ts                 # Tailwind CSS 4 config
-├── tsconfig.json                      # TypeScript config (strict)
-├── .env.example                       # Environment template
-├── .env.local                         # Local env (gitignored)
-├── docker-compose.yml                 # PostgreSQL + services
-├── .github/workflows/                 # CI/CD pipelines
+│   │   ├── (dashboard)/               # Protected dashboard routes (Clerk middleware)
+│   │   │   ├── layout.tsx             # Dashboard shell
+│   │   │   ├── dashboard/page.tsx     # Dashboard home
+│   │   │   ├── compare/               # Carrier comparison ✅
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── compare-page-client.tsx
+│   │   │   ├── shipments/page.tsx     # Shipments list ✅
+│   │   │   └── admin/carriers/        # Carrier admin CRUD (admin only) ✅
+│   │   ├── api/                       # Next.js API Routes
+│   │   │   ├── carriers/              # Carrier CRUD + comparison ✅
+│   │   │   │   ├── route.ts           # GET list, POST create
+│   │   │   │   ├── [id]/route.ts      # GET, PUT, DELETE
+│   │   │   │   ├── [id]/zones/        # Zone CRUD
+│   │   │   │   ├── [id]/zones/[zoneId]/pricing/  # Pricing CRUD
+│   │   │   │   └── compare/route.ts   # POST comparison engine
+│   │   │   ├── shipments/             # Booking ✅
+│   │   │   │   ├── route.ts           # POST book, GET list
+│   │   │   │   └── [id]/route.ts      # GET single
+│   │   │   └── webhooks/clerk/route.ts # Clerk user sync ✅
+│   │   ├── sign-in/[[...sign-in]]/    # Clerk hosted sign-in
+│   │   ├── sign-up/[[...sign-up]]/    # Clerk hosted sign-up
+│   │   ├── layout.tsx                 # Root layout (providers)
+│   │   └── page.tsx                   # Landing page (placeholder)
+│   ├── components/
+│   │   ├── ui/                        # shadcn/ui primitives ✅
+│   │   ├── compare/                   # Comparison UI ✅
+│   │   │   ├── compare-form.tsx
+│   │   │   ├── results-list.tsx
+│   │   │   ├── carrier-result-card.tsx
+│   │   │   ├── city-autocomplete.tsx
+│   │   │   └── mode-toggle.tsx
+│   │   ├── booking/                   # Booking sheet ✅
+│   │   │   ├── booking-sheet.tsx
+│   │   │   └── booking-form.tsx
+│   │   └── shipments/                 # Shipments table ✅
+│   │       └── shipments-table.tsx
+│   ├── lib/
+│   │   ├── db/
+│   │   │   ├── schema/                # users, carriers, carrier_zones,
+│   │   │   │   │                      # carrier_pricing, shipments, commissions ✅
+│   │   │   ├── migrations/            # 0000–0003 applied ✅
+│   │   │   ├── seed.ts                # 5 carriers seeded ✅
+│   │   │   └── index.ts               # Drizzle + pg Pool client
+│   │   ├── carriers/
+│   │   │   ├── adapters/              # amana, aramex, ctm, marocolis, sendex ✅
+│   │   │   ├── types.ts               # CarrierAdapter interface + CarrierApiError ✅
+│   │   │   ├── city-zones.ts          # City → zone code mapping ✅
+│   │   │   └── city-zones.json        # Static zone map (Morocco cities) ✅
+│   │   ├── services/
+│   │   │   ├── carriers.ts            # Carrier CRUD ✅
+│   │   │   ├── comparison.ts          # Ranking algorithm ✅
+│   │   │   ├── bookings.ts            # createBooking, listShipments ✅
+│   │   │   └── commission.ts          # calculateCommission (dual-rate) ✅
+│   │   ├── notifications/
+│   │   │   ├── email.ts               # Resend confirmation email ✅
+│   │   │   └── whatsapp.ts            # WhatsApp Business API ✅
+│   │   └── validations/
+│   │       ├── carriers.ts            # Carrier + compare Zod schemas ✅
+│   │       └── shipments.ts           # BookingInput + response schemas ✅
+│   └── hooks/
+│       ├── use-carriers.ts            # TanStack Query carrier hooks ✅
+│       ├── use-compare.ts             # Comparison mutation hook ✅
+│       ├── use-create-shipment.ts     # Booking mutation hook ✅
+│       └── use-shipments.ts           # Shipments query hook ✅
+├── docs/plans/                        # Implementation plans + progress
+├── drizzle.config.ts
+├── next.config.ts
+├── tsconfig.json
+├── .env.example
+├── .github/workflows/ci.yml           # lint + tsc + vitest + build
 ├── package.json
 ├── pnpm-lock.yaml
 ├── README.md
@@ -206,41 +237,71 @@ pnpm dev
 
 ### 🔧 Environment Variables
 
-Required for development:
+**Required now (Phases 1–4):**
 ```bash
-# Database (Supabase or local)
+# Database
 DATABASE_URL=postgresql://user:password@localhost:5432/wassalha
 
 # Auth (Clerk)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
+CLERK_WEBHOOK_SECRET=whsec_...
 
-# Google Maps
+# Clerk redirect URLs
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
+
+# Google Maps (address autocomplete)
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIza...
 
-# Stripe (commission billing)
-STRIPE_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-
-# Resend (email)
+# Resend (booking confirmation email — optional, skipped if missing)
 RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=Wassalha <onboarding@resend.dev>
 
-# WhatsApp Business API
-WHATSAPP_API_TOKEN=...
-WHATSAPP_PHONE_ID=...
+# Carrier APIs (all optional — booking returns 502 if missing)
+AMANA_API_URL=https://api.amana.ma
+AMANA_API_KEY=
+AMANA_ACCOUNT_ID=
+ARAMEX_API_URL=https://ws.aramex.net/ShippingAPI.V2
+ARAMEX_USERNAME=
+ARAMEX_PASSWORD=
+ARAMEX_ACCOUNT_NUMBER=
+ARAMEX_ACCOUNT_PIN=
+CTM_API_URL=https://api.ctm.ma
+CTM_API_KEY=
+MAROCOLIS_API_URL=https://api.marocolis.ma
+MAROCOLIS_CLIENT_ID=
+MAROCOLIS_CLIENT_SECRET=
+SENDEX_API_URL=https://api.sendex.ma
+SENDEX_API_TOKEN=
+```
 
-# Supabase Realtime (tracking)
+**Phase 5 (real-time tracking):**
+```bash
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
-
-# Mapbox (route visualization)
 NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ...
+```
 
-# PostHog (analytics)
+**Phase 6 (billing):**
+```bash
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 NEXT_PUBLIC_POSTHOG_KEY=phc_...
+```
 
-# Sentry (error monitoring)
+**Phase 7 (WhatsApp):**
+```bash
+WHATSAPP_API_TOKEN=...
+WHATSAPP_PHONE_ID=...
+WHATSAPP_TEMPLATE_NAME=shipment_notification
+```
+
+**Phase 8 (monitoring):**
+```bash
 SENTRY_DSN=https://...@sentry.io/...
 ```
 

@@ -298,51 +298,41 @@ wassalha/
 
 ## API Endpoints
 
-### Authentication
+### Live (Phase 1–4)
+
+#### Carriers
 ```
-POST   /api/auth/login              Login and get session
-POST   /api/auth/register           Retailer self-registration
-POST   /api/auth/logout             End session
-GET    /api/auth/me                 Current user info
+GET    /api/carriers                        List active carriers
+POST   /api/carriers                        Create carrier (admin)
+GET    /api/carriers/:id                    Get carrier + zones + pricing
+PUT    /api/carriers/:id                    Update carrier (admin)
+DELETE /api/carriers/:id                    Soft-delete carrier (admin)
+GET    /api/carriers/:id/zones              List zones
+POST   /api/carriers/:id/zones              Create zone (admin)
+DELETE /api/carriers/:id/zones/:zoneId      Delete zone (admin)
+POST   /api/carriers/:id/zones/:zoneId/pricing        Add pricing tier (admin)
+DELETE /api/carriers/:id/zones/:zoneId/pricing/:pId   Delete pricing tier (admin)
+POST   /api/carriers/compare                Compare carriers for a route + weight
 ```
 
-### Carriers (Admin)
+#### Shipments & Booking
 ```
-GET    /api/carriers                List all carriers (with zones + pricing)
-POST   /api/carriers                Create carrier (admin)
-GET    /api/carriers/:id            Get carrier details
-PUT    /api/carriers/:id            Update carrier (admin)
-DELETE /api/carriers/:id            Remove carrier (admin)
-POST   /api/carriers/compare        Compare carriers for a route
+POST   /api/shipments               Book carrier → creates shipment + commission record
+GET    /api/shipments               List shipments (retailer: own; admin: all) — paginated
+GET    /api/shipments/:id           Get single shipment
 ```
 
-### Shipments & Booking
+#### Auth Sync
 ```
-GET    /api/shipments               List shipments (paginated, filtered)
-POST   /api/shipments               Create shipment + book carrier
-GET    /api/shipments/:id           Get shipment details
-PUT    /api/shipments/:id           Update shipment
-GET    /api/shipments/:id/track     Get tracking status + events
-POST   /api/shipments/export        Export shipments to CSV
+POST   /api/webhooks/clerk          Clerk webhook — sync user to DB on sign-up
 ```
 
-### Tracking
+### Planned (Phase 5+)
 ```
-POST   /api/tracking/webhook        Receive carrier status webhooks
-GET    /api/tracking/live/:id       SSE stream for live tracking
-```
-
-### Commissions & Analytics
-```
-GET    /api/commissions             Commission billing dashboard data
-GET    /api/analytics               Retailer analytics (spend, savings, rates)
-GET    /api/analytics/charts        Chart data (delivery trends, cost trends)
-```
-
-### Addresses
-```
-GET    /api/addresses/autocomplete  Google Maps autocomplete proxy
-GET    /api/addresses/geocode       Geocode address to lat/lng
+GET    /api/shipments/:id/track     Tracking status + events (Phase 5)
+POST   /api/tracking/webhook        Carrier status webhooks (Phase 5)
+GET    /api/commissions             Billing dashboard data (Phase 6)
+GET    /api/analytics               Retailer analytics (Phase 6)
 ```
 
 ---
@@ -453,17 +443,21 @@ hooks/              → Custom hooks (TanStack Query, Supabase subscriptions)
 
 ### Carrier Adapter Pattern
 
-Each carrier integration implements a unified interface:
+Each carrier integration implements a unified interface (`src/lib/carriers/types.ts`):
 
 ```typescript
 interface CarrierAdapter {
-  getQuote(origin: Address, dest: Address, parcel: Parcel): Promise<CarrierQuote>;
-  createBooking(quote: CarrierQuote, shipment: Shipment): Promise<BookingConfirmation>;
-  getTrackingStatus(trackingId: string): Promise<TrackingStatus>;
-  cancelBooking(bookingId: string): Promise<boolean>;
+  slug: string;
+  createShipment(input: CreateShipmentInput): Promise<CarrierShipmentResult>;
+  // getTrackingStatus() — Phase 5
+}
+
+class CarrierApiError extends Error {
+  code: "AUTH_FAILED" | "INVALID_ADDRESS" | "SERVICE_UNAVAILABLE" | "UNKNOWN";
 }
 ```
 
+5 adapters live: **Amana, Aramex, CTM, Marocolis, Sendex** (`src/lib/carriers/adapters/`).
 New carriers are added by implementing this interface — zero changes to core logic.
 
 ---
