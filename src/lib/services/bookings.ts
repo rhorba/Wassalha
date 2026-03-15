@@ -22,18 +22,31 @@ export async function createBooking(
   });
   if (!carrier) throw new Error("Carrier not found");
 
-  // 2. Call carrier adapter — throws CarrierApiError on any failure
+  // 2. Call carrier adapter — normalize all errors to CarrierApiError
+  //    so the API route always returns 502 (never 500) on carrier failures.
+  //    TypeError from fetch (e.g. empty API URL) is caught here too.
   const adapter = getAdapter(carrier.slug);
-  const result  = await adapter.createShipment({
-    recipientName:     input.recipientName,
-    recipientPhone:    input.recipientPhone,
-    recipientCity:     input.recipientCity,
-    recipientAddress:  input.recipientAddress,
-    originCity:        input.originCity,
-    weightG:           input.weightG,
-    codAmountMad:      input.codAmountMad,
-    parcelDescription: input.parcelDescription,
-  });
+  let result: Awaited<ReturnType<typeof adapter.createShipment>>;
+  try {
+    result = await adapter.createShipment({
+      recipientName:     input.recipientName,
+      recipientPhone:    input.recipientPhone,
+      recipientCity:     input.recipientCity,
+      recipientAddress:  input.recipientAddress,
+      originCity:        input.originCity,
+      weightG:           input.weightG,
+      codAmountMad:      input.codAmountMad,
+      parcelDescription: input.parcelDescription,
+    });
+  } catch (err) {
+    if (err instanceof CarrierApiError) throw err;
+    // Unexpected error (e.g. missing API URL env var, network failure)
+    console.error(`[adapter:${carrier.slug}]`, err);
+    throw new CarrierApiError(
+      "SERVICE_UNAVAILABLE",
+      `${carrier.name}: service unavailable`,
+    );
+  }
 
   // 3. Calculate commission
   const commission = calculateCommission(input.shippingCostMad, input.codAmountMad);
