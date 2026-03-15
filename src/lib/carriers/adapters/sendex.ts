@@ -1,4 +1,4 @@
-import type { CarrierAdapter, CreateShipmentInput, CarrierShipmentResult } from "../types";
+import type { CarrierAdapter, CreateShipmentInput, CarrierShipmentResult, TrackingEvent } from "../types";
 import { CarrierApiError } from "../types";
 
 export class SendexAdapter implements CarrierAdapter {
@@ -40,5 +40,9 @@ export class SendexAdapter implements CarrierAdapter {
       carrierReference: data.reference_number,
       labelUrl:         data.label,
     };
+  }
+
+  async getTrackingStatus(_trackingNumber: string): Promise<TrackingEvent[]> {
+    throw new CarrierApiError("SERVICE_UNAVAILABLE", "Sendex: tracking API not yet integrated");
   }
 }

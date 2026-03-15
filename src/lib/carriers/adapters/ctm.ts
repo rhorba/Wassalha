@@ -1,4 +1,4 @@
-import type { CarrierAdapter, CreateShipmentInput, CarrierShipmentResult } from "../types";
+import type { CarrierAdapter, CreateShipmentInput, CarrierShipmentResult, TrackingEvent } from "../types";
 import { CarrierApiError } from "../types";
 
 export class CtmAdapter implements CarrierAdapter {
@@ -37,5 +37,9 @@ export class CtmAdapter implements CarrierAdapter {
       trackingNumber:   data.numero_suivi,
       carrierReference: data.reference,
     };
+  }
+
+  async getTrackingStatus(_trackingNumber: string): Promise<TrackingEvent[]> {
+    throw new CarrierApiError("SERVICE_UNAVAILABLE", "CTM: tracking API not yet integrated");
   }
 }

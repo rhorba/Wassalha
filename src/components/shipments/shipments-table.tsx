@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useShipments } from "@/hooks/use-shipments";
-import { Badge } from "@/components/ui/badge";
+import { useShipmentStatus } from "@/hooks/use-shipment-status";
+import { StatusBadge } from "@/components/shipments/status-badge";
 import {
   Table,
   TableBody,
@@ -10,29 +12,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Shipment } from "@/lib/db/schema";
 
-const STATUS_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  pending:    "secondary",
-  confirmed:  "default",
-  picked_up:  "default",
-  in_transit: "default",
-  delivered:  "outline",
-  failed:     "destructive",
-  cancelled:  "destructive",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  pending:    "En attente",
-  confirmed:  "Confirmé",
-  picked_up:  "Collecté",
-  in_transit: "En transit",
-  delivered:  "Livré",
-  failed:     "Échoué",
-  cancelled:  "Annulé",
-};
+function LiveStatusCell({ id, status }: { id: string; status: Shipment["status"] }) {
+  const live = useShipmentStatus(id, status);
+  return <StatusBadge status={live} />;
+}
 
 export function ShipmentsTable() {
   const { data, isLoading, isError } = useShipments();
@@ -64,6 +49,7 @@ export function ShipmentsTable() {
           <TableHead>Numéro de suivi</TableHead>
           <TableHead>Statut</TableHead>
           <TableHead className="text-right">Coût (MAD)</TableHead>
+          <TableHead />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -75,12 +61,18 @@ export function ShipmentsTable() {
               {s.carrierTrackingNumber ?? "—"}
             </TableCell>
             <TableCell>
-              <Badge variant={STATUS_VARIANT[s.status] ?? "secondary"}>
-                {STATUS_LABEL[s.status] ?? s.status}
-              </Badge>
+              <LiveStatusCell id={s.id} status={s.status} />
             </TableCell>
             <TableCell className="text-right">
               {(s.shippingCostMad / 100).toFixed(2)}
+            </TableCell>
+            <TableCell>
+              <Link
+                href={`/shipments/${s.id}`}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                Voir suivi
+              </Link>
             </TableCell>
           </TableRow>
         ))}

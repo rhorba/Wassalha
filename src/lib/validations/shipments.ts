@@ -23,10 +23,20 @@ export const BookingInputSchema = z.object({
 
 export type BookingInput = z.infer<typeof BookingInputSchema>;
 
+export const shipmentStatusValues = [
+  "pending",
+  "confirmed",
+  "picked_up",
+  "in_transit",
+  "delivered",
+  "failed",
+  "cancelled",
+] as const;
+
 // Response shape from POST /api/shipments
 export const ShipmentResponseSchema = z.object({
   id:                    z.string().uuid(),
-  status:                z.string(),
+  status:                z.enum(shipmentStatusValues),
   carrierTrackingNumber: z.string().nullable(),
   carrierId:             z.string().uuid(),
   recipientName:         z.string(),

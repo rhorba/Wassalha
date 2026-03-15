@@ -1,3 +1,7 @@
+import type { shipmentStatusEnum } from "@/lib/db/schema";
+
+type ShipmentStatus = (typeof shipmentStatusEnum.enumValues)[number];
+
 // Unified input for all carrier shipment creation calls
 export interface CreateShipmentInput {
   recipientName:     string;
@@ -17,11 +21,20 @@ export interface CarrierShipmentResult {
   labelUrl?:         string;       // PDF waybill URL, if carrier provides it
 }
 
+// Normalized tracking event from any carrier API
+export interface TrackingEvent {
+  carrierRawStatus: string;
+  status:           ShipmentStatus;
+  location?:        string;
+  description?:     string;
+  occurredAt:       Date;
+}
+
 // All carrier adapters implement this interface
 export interface CarrierAdapter {
   slug: string;
   createShipment(input: CreateShipmentInput): Promise<CarrierShipmentResult>;
-  // getTrackingStatus() deferred to Phase 5
+  getTrackingStatus(trackingNumber: string): Promise<TrackingEvent[]>;
 }
 
 // Thrown by adapters on carrier API failure — caught by booking service

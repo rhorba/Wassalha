@@ -1,4 +1,4 @@
-import type { CarrierAdapter, CreateShipmentInput, CarrierShipmentResult } from "../types";
+import type { CarrierAdapter, CreateShipmentInput, CarrierShipmentResult, TrackingEvent } from "../types";
 import { CarrierApiError } from "../types";
 
 export class MarocolisAdapter implements CarrierAdapter {
@@ -51,5 +51,9 @@ export class MarocolisAdapter implements CarrierAdapter {
       trackingNumber:   data.code_suivi,
       carrierReference: data.id_colis,
     };
+  }
+
+  async getTrackingStatus(_trackingNumber: string): Promise<TrackingEvent[]> {
+    throw new CarrierApiError("SERVICE_UNAVAILABLE", "Marocolis: tracking API not yet integrated");
   }
 }

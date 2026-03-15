@@ -79,10 +79,10 @@ describe("Seed data", () => {
 
     const slugs = seeded.map((c) => c.slug);
     expect(slugs).toContain("amana");
-    expect(slugs).toContain("chronopost");
+    expect(slugs).toContain("aramex");
     expect(slugs).toContain("ctm");
-    expect(slugs).toContain("fret-express");
-    expect(slugs).toContain("colis-prive");
+    expect(slugs).toContain("marocolis");
+    expect(slugs).toContain("sendex");
   });
 
   it("priceMad is stored in centimes (integer)", async () => {

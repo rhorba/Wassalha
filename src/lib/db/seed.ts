@@ -28,8 +28,8 @@ const CARRIERS_SEED = [
     ],
   },
   {
-    name: "Chronopost Maroc",
-    slug: "chronopost",
+    name: "Aramex",
+    slug: "aramex",
     logoUrl: null,
     zones: [
       {
@@ -74,8 +74,8 @@ const CARRIERS_SEED = [
     ],
   },
   {
-    name: "Fret Express",
-    slug: "fret-express",
+    name: "Marocolis",
+    slug: "marocolis",
     logoUrl: null,
     zones: [
       {
@@ -90,8 +90,8 @@ const CARRIERS_SEED = [
     ],
   },
   {
-    name: "Colis Privé Maroc",
-    slug: "colis-prive",
+    name: "Sendex",
+    slug: "sendex",
     logoUrl: null,
     zones: [
       {

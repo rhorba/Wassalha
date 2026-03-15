@@ -1,4 +1,4 @@
-import type { CarrierAdapter, CreateShipmentInput, CarrierShipmentResult } from "../types";
+import type { CarrierAdapter, CreateShipmentInput, CarrierShipmentResult, TrackingEvent } from "../types";
 import { CarrierApiError } from "../types";
 
 export class AmanaAdapter implements CarrierAdapter {
@@ -47,5 +47,9 @@ export class AmanaAdapter implements CarrierAdapter {
       carrierReference: data.reference,
       labelUrl:         data.label_url,
     };
+  }
+
+  async getTrackingStatus(_trackingNumber: string): Promise<TrackingEvent[]> {
+    throw new CarrierApiError("SERVICE_UNAVAILABLE", "Amana: tracking API not yet integrated");
   }
 }
