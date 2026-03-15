@@ -4,11 +4,12 @@ import { useState } from "react";
 import { CompareForm } from "@/components/compare/compare-form";
 import { ResultsList } from "@/components/compare/results-list";
 import { useCompare } from "@/hooks/use-compare";
-import type { CarrierResult } from "@/lib/validations/carriers";
+import type { CarrierResult, CompareInput } from "@/lib/validations/carriers";
 
 export function ComparePageClient() {
-  const [results, setResults] = useState<CarrierResult[] | null>(null);
+  const [results, setResults]           = useState<CarrierResult[] | null>(null);
   const [cityNotFound, setCityNotFound] = useState(false);
+  const [lastInput, setLastInput]       = useState<CompareInput | null>(null);
   const compare = useCompare();
 
   return (
@@ -17,6 +18,7 @@ export function ComparePageClient() {
         isLoading={compare.isPending}
         onSubmit={(data) => {
           setCityNotFound(false);
+          setLastInput(data);
           compare.mutate(data, {
             onSuccess: (res) => {
               setResults(res.results);
@@ -36,7 +38,9 @@ export function ComparePageClient() {
         </p>
       )}
 
-      {results !== null && !cityNotFound && <ResultsList results={results} />}
+      {results !== null && !cityNotFound && lastInput && (
+        <ResultsList results={results} compareInput={lastInput} />
+      )}
     </div>
   );
 }
