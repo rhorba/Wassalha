@@ -30,7 +30,7 @@ export async function sendBookingConfirmationEmail(
   const codMad        = (params.shipment.codAmountMad / 100).toFixed(2);
 
   const { error } = await resend.emails.send({
-    from:    "Wassalha <noreply@wassalha.ma>",
+    from:    process.env.RESEND_FROM_EMAIL ?? "Wassalha <onboarding@resend.dev>",
     to:      params.retailerEmail,
     subject: `Réservation confirmée — ${params.carrier.name} — ${params.shipment.carrierTrackingNumber ?? ""}`,
     html: `
