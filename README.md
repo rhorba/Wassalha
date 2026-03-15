@@ -21,7 +21,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | W1 | Foundation + Auth | ✅ Done | Auth working, DB migrated, CI/CD live |
 | W2 | Address + Carrier Data | ✅ Done | Address autocomplete + carrier CRUD + admin panel |
 | W3 | Comparison Engine | ✅ Done | Ranking algorithm live — users compare carriers by cost/speed/reliability |
-| W4 | Booking + Commission | ⏳ Planned | Full booking flow end-to-end |
+| W4 | Booking + Commission | ✅ Done | Full booking flow end-to-end — 99 tests passing |
 | W5 | Real-time Tracking | ⏳ Planned | Live tracking dashboard working |
 | W6 | Dashboard + Analytics | ⏳ Planned | Full analytics dashboard live |
 | W7 | Landing Page + Onboarding | ⏳ Planned | Landing page live, onboarding flow complete |
@@ -40,9 +40,9 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | Unified carrier adapter interface | ✅ | — | **W3** |
 | Comparison ranking algorithm | ✅ | — | **W3** |
 | Comparison results UI | — | ✅ | **W3** |
-| One-click booking flow | ⏳ | ⏳ | **W4** |
-| Commission calculation engine | ⏳ | — | **W4** |
-| Booking confirmation + email | ⏳ | ⏳ | **W4** |
+| One-click booking flow | ✅ | ✅ | **W4** |
+| Commission calculation engine | ✅ | — | **W4** |
+| Booking confirmation + email | ✅ | ✅ | **W4** |
 | Carrier tracking API integrations | ⏳ | — | **W5** |
 | Live tracking dashboard | — | ⏳ | **W5** |
 | Push notifications (status changes) | ⏳ | ⏳ | **W5** |

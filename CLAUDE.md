@@ -59,11 +59,9 @@ Address autocomplete (Google Places), carrier DB seeding (5 carriers), admin CRU
 
 Ranking algorithm (cost/speed/reliability with mode weights), `POST /api/carriers/compare`, city-zone static mapping, comparison service, filter/sort UI, TanStack Query mutation hook. **Complete. 78 tests passing.**
 
-### ⏳ Phase 4 — Booking + Commission (Week 4)
+### ✅ Phase 4 — Booking + Commission (Week 4)
 
-### ⏳ Phase 4 — Booking + Commission (Week 4)
-
-One-click booking, shipment records, commission calculation, confirmation flow.
+One-click booking (BookingSheet → carrier adapter → atomic DB transaction), shipment records, dual-rate commission engine (10% shipping + 1.5% COD), Resend confirmation email + WhatsApp recipient notification. **Complete. 99 tests passing.**
 
 
 ### ⏳ Phase 5 — Real-time Tracking (Week 5)
@@ -90,13 +88,13 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 |---------|-----|----------|-------|
 | Project Scaffolding | ✅ | ✅ | Next.js 15 + Tailwind 4 + shadcn/ui |
 | Authentication (Clerk/NextAuth) | ✅ | ✅ | Clerk hosted UI + publicMetadata role + JWT template |
-| DB Schema + Migrations | ✅ | — | users + carriers + carrier_zones + carrier_pricing |
+| DB Schema + Migrations | ✅ | — | users + carriers + carrier_zones + carrier_pricing + shipments + commissions |
 | CI/CD Pipeline | ✅ | ✅ | GitHub Actions — lint + tsc + vitest + build |
 | Address Autocomplete | ✅ | ✅ | Google Places API (Morocco-restricted) + plain-text fallback |
 | Carrier Database + Admin CRUD | ✅ | ✅ | 5 carriers seeded, full admin panel with RBAC |
-| Carrier Comparison Engine | ✅ | ✅ | Ranking: cost, speed, reliability — 78 tests |
-| One-click Booking | ⏳ | ⏳ | Booking + confirmation email |
-| Commission Engine | ⏳ | ⏳ | Per-shipment commission calc |
+| Carrier Comparison Engine | ✅ | ✅ | Ranking: cost, speed, reliability — 99 tests |
+| One-click Booking | ✅ | ✅ | CarrierAdapter → atomic TX → Resend email + WhatsApp |
+| Commission Engine | ✅ | ✅ | Dual-rate: 10% shipping + 1.5% COD |
 | Real-time GPS Tracking | ⏳ | ⏳ | Supabase Realtime + Mapbox |
 | Retailer Dashboard | ⏳ | ⏳ | Shipments, spend, savings |
 | Analytics + Charts | ⏳ | ⏳ | Recharts, export CSV |
