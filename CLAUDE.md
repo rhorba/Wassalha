@@ -80,11 +80,17 @@ Role-aware KPI dashboard (6 retailer cards + 3 admin pipeline cards), Recharts a
 
 ### ✅ Phase 7 — Landing Page + Onboarding (Week 7)
 
-Marketing landing page (Hero in Darija + French, FAQ accordion, CTA), 3-step onboarding wizard (`/onboarding`), user profile API (`GET/PATCH /api/users/me`), compare form pre-fill from saved city, WhatsApp already wired. **Complete. 157 tests passing.**
+Marketing landing page (Hero in Darija + French, FAQ accordion, CTA), 3-step onboarding wizard (`/onboarding`), user profile API (`GET/PATCH /api/users/me`), compare form pre-fill from saved city, WhatsApp already wired. **Complete. 157 tests passing. All S1–S10 smoke tests passed.**
 
-### ⏳ Phase 8 — Testing + Launch (Week 8)
+**Smoke test bugs fixed:**
+- Phone validation rejected spaces — fixed with `.transform()` strip before regex
+- `GET /api/users/me` 404 for new users — fixed: lazy upsert via `currentUser()` when Clerk webhook doesn't fire to localhost
+- `PATCH /api/users/me` 500 (json(undefined)) — fixed: null-check returns 404
+- Onboarding redirect too early (after step 1) — fixed: only redirect at `step === 1` on initial load
 
-E2E testing, performance optimization, security audit, beta launch to 20 retailers.
+### ⏳ Phase 8 — Testing + Launch (Week 8) — IN PROGRESS
+
+E2E testing (Playwright), performance optimization (Core Web Vitals), security audit (OWASP), beta launch to 20 retailers.
 
 ---
 

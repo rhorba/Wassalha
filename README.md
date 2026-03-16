@@ -590,18 +590,23 @@ Automated unit + integration tests only.
 ### Phase 5 — ✅ Fully logged
 Parts 1–4 complete: 107 tests + smoke tests + all 7 edge cases ✅.
 
-### Phase 7 — Smoke tests pending (S1–S10)
+### Phase 7 — ✅ Fully logged
 
-Manual verification of the onboarding wizard, landing page, and user profile API. Run against `pnpm dev`.
-See full checklist: `docs/plans/2026-03-16-phase-7-landing-onboarding/test-plan.md`.
+All S1–S10 smoke tests passed. See `docs/plans/2026-03-16-phase-7-landing-onboarding/test-plan.md`.
 
 | # | Scenario | Status |
 |---|----------|--------|
-| S1–S4 | Onboarding wizard — full 3-step flow | ⏳ pending |
-| S5 | Already-onboarded redirect | ⏳ pending |
-| S6 | Compare form origin city pre-fill | ⏳ pending |
-| S7–S8 | Landing page + FAQ accordion | ⏳ pending |
-| S9–S10 | API auth + validation errors | ⏳ pending |
+| S1–S4 | Onboarding wizard — full 3-step flow | ✅ pass |
+| S5 | Already-onboarded redirect | ✅ pass |
+| S6 | Compare form origin city pre-fill | ✅ pass |
+| S7–S8 | Landing page + FAQ accordion | ✅ pass |
+| S9–S10 | API auth + validation errors | ✅ pass |
+
+**Bugs found and fixed during smoke testing:**
+- Phone validation rejected spaces ("+212 6 12 34 56 78") — fixed with `.transform()` strip
+- `GET /api/users/me` 404 for new users (Clerk webhook doesn't fire to localhost) — fixed with lazy upsert via `currentUser()`
+- `PATCH /api/users/me` 500 when user not in DB — fixed with null-check → 404
+- Onboarding redirect fired after step 1 (too early) — fixed: only redirect when `step === 1` on initial load
 
 ### Phase 6 — 2 skipped
 
