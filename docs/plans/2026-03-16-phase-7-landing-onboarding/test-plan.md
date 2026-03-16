@@ -23,3 +23,20 @@
 ### 5. `PATCH /api/users/me`
 **File:** `src/app/api/users/me/__tests__/route.test.ts` (same file)
 **Covers:** 401 unauthenticated; 422 with Zod issues on invalid phone; 200 + updated data on valid partial patch.
+
+---
+
+## Smoke Tests (Manual — run against `pnpm dev`)
+
+| # | Steps | Expected | Status |
+|---|-------|----------|--------|
+| S1 | Sign up as a brand-new user | Redirected to `/onboarding`, step 1 renders | ⏳ pending |
+| S2 | Step 1: enter business name + phone → click Continuer | Step 2 renders; DB row updated (`business_name`, `phone`) | ⏳ pending |
+| S3 | Step 2: enter address + city → click Continuer | Step 3 renders; DB row updated (`default_sender_address`, `default_sender_city`) | ⏳ pending |
+| S4 | Step 3: click "Comparer les transporteurs →" | Redirected to `/compare` | ⏳ pending |
+| S5 | Sign out, sign back in as same user; visit `/onboarding` manually | Redirected immediately to `/dashboard` (already onboarded) | ⏳ pending |
+| S6 | Go to `/compare` as onboarded user | Origin city input pre-filled with saved city ("Recognized: [city]" shown) | ⏳ pending |
+| S7 | Visit `/` as signed-out user | Full landing page renders — hero, 3 value cards, how-it-works, carrier strip, FAQ, CTA footer | ⏳ pending |
+| S8 | Click any FAQ question on `/` | Accordion expands/collapses correctly | ⏳ pending |
+| S9 | `curl -X GET http://localhost:3000/api/users/me` (no auth) | `{"error":"Unauthorized"}` with status 401 | ⏳ pending |
+| S10 | `curl -X PATCH http://localhost:3000/api/users/me -d '{"phone":"bad"}'` (authenticated) | `{"error":{"message":"Validation error",...}}` with status 422 | ⏳ pending |

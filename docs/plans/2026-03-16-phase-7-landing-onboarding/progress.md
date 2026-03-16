@@ -43,5 +43,20 @@
 - Total: 157 passed, 0 failed
 - All tests passing: ✅
 
-## Status: COMPLETE ✅
-All 8 tasks done. Phase 7 fully implemented.
+## Smoke Tests
+
+| # | Description | Status |
+|---|-------------|--------|
+| S1 | Sign up → redirected to `/onboarding` | ⏳ pending |
+| S2 | Step 1 (business name + phone) → DB updated, step 2 renders | ⏳ pending |
+| S3 | Step 2 (address + city) → DB updated, step 3 renders | ⏳ pending |
+| S4 | Step 3 CTA → redirects to `/compare` | ⏳ pending |
+| S5 | Already-onboarded user visits `/onboarding` → redirected to `/dashboard` | ⏳ pending |
+| S6 | `/compare` origin city pre-filled from saved profile | ⏳ pending |
+| S7 | `/` landing page renders all sections | ⏳ pending |
+| S8 | FAQ accordion opens/closes | ⏳ pending |
+| S9 | `GET /api/users/me` unauthenticated → 401 | ⏳ pending |
+| S10 | `PATCH /api/users/me` invalid phone → 422 | ⏳ pending |
+
+## Status: IMPLEMENTATION COMPLETE ✅ — Smoke Tests Pending ⏳
+All 8 tasks done. 157 tests passing. Smoke tests S1–S10 pending manual verification.
