@@ -22,7 +22,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | W2 | Address + Carrier Data | ✅ Done | Address autocomplete + carrier CRUD + admin panel |
 | W3 | Comparison Engine | ✅ Done | Ranking algorithm live — users compare carriers by cost/speed/reliability |
 | W4 | Booking + Commission | ✅ Done | Full booking flow end-to-end — 99 tests passing |
-| W5 | Real-time Tracking | ⏳ Planned | Live tracking dashboard working |
+| W5 | Real-time Tracking | ✅ Done | Live tracking stepper + badge — 107 tests passing |
 | W6 | Dashboard + Analytics | ⏳ Planned | Full analytics dashboard live |
 | W7 | Landing Page + Onboarding | ⏳ Planned | Landing page live, onboarding flow complete |
 | W8 | Testing + Launch Prep | ⏳ Planned | Beta live with 20 users, feedback loop active |
@@ -43,9 +43,9 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | One-click booking flow | ✅ | ✅ | **W4** |
 | Commission calculation engine | ✅ | — | **W4** |
 | Booking confirmation + email | ✅ | ✅ | **W4** |
-| Carrier tracking API integrations | ⏳ | — | **W5** |
-| Live tracking dashboard | — | ⏳ | **W5** |
-| Push notifications (status changes) | ⏳ | ⏳ | **W5** |
+| Carrier tracking API integrations | ✅ | — | **W5** |
+| Live tracking dashboard | — | ✅ | **W5** |
+| Push notifications (status changes) | ⏳ | ⏳ | **W7** |
 | Retailer dashboard (shipments, spend, savings) | ⏳ | ⏳ | **W6** |
 | Commission/billing dashboard | ⏳ | ⏳ | **W6** |
 | Charts + CSV export | — | ⏳ | **W6** |
@@ -191,6 +191,8 @@ wassalha/
 │   │   │   ├── shipments/             # Booking ✅
 │   │   │   │   ├── route.ts           # POST book, GET list
 │   │   │   │   └── [id]/route.ts      # GET single
+│   │   │   ├── cron/tracking/route.ts # Hourly tracking poller ✅
+│   │   │   ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
 │   │   │   └── webhooks/clerk/route.ts # Clerk user sync ✅
 │   │   ├── sign-in/[[...sign-in]]/    # Clerk hosted sign-in
 │   │   ├── sign-up/[[...sign-up]]/    # Clerk hosted sign-up
@@ -207,13 +209,18 @@ wassalha/
 │   │   ├── booking/                   # Booking sheet ✅
 │   │   │   ├── booking-sheet.tsx
 │   │   │   └── booking-form.tsx
-│   │   └── shipments/                 # Shipments table ✅
-│   │       └── shipments-table.tsx
+│   │   ├── shipments/                 # Shipments table ✅
+│   │   │   ├── shipments-table.tsx
+│   │   │   └── status-badge.tsx       # Color-coded status badge ✅
+│   │   └── tracking/                  # Tracking UI ✅
+│   │       ├── tracking-timeline.tsx  # Live stepper component ✅
+│   │       └── live-shipment-detail.tsx # LiveStatusBadge (Realtime + polling) ✅
 │   ├── lib/
 │   │   ├── db/
 │   │   │   ├── schema/                # users, carriers, carrier_zones,
-│   │   │   │                          # carrier_pricing, shipments, commissions ✅
-│   │   │   ├── migrations/            # 0000–0003 applied ✅
+│   │   │   │                          # carrier_pricing, shipments, commissions,
+│   │   │   │                          # tracking_events ✅
+│   │   │   ├── migrations/            # 0000–0004 applied ✅
 │   │   │   ├── seed.ts                # 5 carriers seeded ✅
 │   │   │   └── index.ts               # Drizzle + pg Pool client
 │   │   ├── carriers/
@@ -225,7 +232,10 @@ wassalha/
 │   │   │   ├── carriers.ts            # Carrier CRUD ✅
 │   │   │   ├── comparison.ts          # Ranking algorithm ✅
 │   │   │   ├── bookings.ts            # createBooking, listShipments ✅
-│   │   │   └── commission.ts          # calculateCommission (dual-rate) ✅
+│   │   │   ├── commission.ts          # calculateCommission (dual-rate) ✅
+│   │   │   └── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
+│   │   ├── supabase/
+│   │   │   └── client.ts              # Supabase client (Realtime) ✅
 │   │   ├── notifications/
 │   │   │   ├── email.ts               # Resend confirmation email ✅
 │   │   │   └── whatsapp.ts            # WhatsApp Business API ✅
@@ -236,7 +246,9 @@ wassalha/
 │       ├── use-carriers.ts            # TanStack Query carrier hooks ✅
 │       ├── use-compare.ts             # Comparison mutation hook ✅
 │       ├── use-create-shipment.ts     # Booking mutation hook ✅
-│       └── use-shipments.ts           # Shipments query hook ✅
+│       ├── use-shipments.ts           # Shipments query hook ✅
+│       ├── use-shipment-status.ts     # Realtime + 10s polling status hook ✅
+│       └── use-tracking-events.ts     # Realtime INSERT events hook ✅
 ├── docs/plans/                        # Implementation plans + progress
 ├── drizzle.config.ts
 ├── next.config.ts
@@ -253,7 +265,7 @@ wassalha/
 
 ## API Endpoints
 
-### Live (Phase 1–4)
+### Live (Phase 1–5)
 
 #### Carriers
 ```
@@ -277,15 +289,20 @@ GET    /api/shipments               List shipments (retailer: own; admin: all) �
 GET    /api/shipments/:id           Get single shipment
 ```
 
+#### Tracking (Phase 5)
+```
+GET    /api/cron/tracking           Cron job — poll active shipments, upsert tracking_events
+                                    Protected: Authorization: Bearer <CRON_SECRET>
+                                    Schedule: every hour (vercel.json)
+```
+
 #### Auth Sync
 ```
 POST   /api/webhooks/clerk          Clerk webhook — sync user to DB on sign-up
 ```
 
-### Planned (Phase 5+)
+### Planned (Phase 6+)
 ```
-GET    /api/shipments/:id/track     Tracking status + events (Phase 5)
-POST   /api/tracking/webhook        Carrier status webhooks (Phase 5)
 GET    /api/commissions             Billing dashboard data (Phase 6)
 GET    /api/analytics               Retailer analytics (Phase 6)
 ```
@@ -302,7 +319,7 @@ GET    /api/analytics               Retailer analytics (Phase 6)
 | `carrier_pricing` | ✅ Live | Pricing tiers per zone (stored in centimes) |
 | `shipments` | ✅ Live | Shipment records — status, recipient, tracking number, COD amount |
 | `commissions` | ✅ Live | Per-shipment commission (10% shipping + 1.5% COD) |
-| `tracking_events` | ⏳ W5 | Status change history per shipment |
+| `tracking_events` | ✅ Live | Status change history per shipment — upsert keyed on (shipment_id, occurred_at, carrier_raw_status) |
 | `notifications` | ⏳ W7 | WhatsApp/email notification log |
 | `audit_logs` | ⏳ W8 | System audit trail |
 
@@ -327,10 +344,11 @@ GET    /api/analytics               Retailer analytics (Phase 6)
 | `WHATSAPP_API_TOKEN` | W7+ | WhatsApp Business API token (Meta) |
 | `WHATSAPP_PHONE_ID` | W7+ | WhatsApp phone number ID |
 | `WHATSAPP_TEMPLATE_NAME` | W7+ | Approved message template name |
-| `NEXT_PUBLIC_SUPABASE_URL` | W5+ | Supabase project URL (real-time tracking) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | W5+ | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | W5+ | Supabase service role key |
-| `NEXT_PUBLIC_MAPBOX_TOKEN` | W5+ | Mapbox access token (route visualization) |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ W5 | Supabase project URL (real-time tracking) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ W5 | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ W5 | Supabase service role key |
+| `CRON_SECRET` | ✅ W5 | Bearer token protecting `/api/cron/tracking` — generate with `openssl rand -hex 32` |
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | W6+ | Mapbox access token (route visualization) |
 | `STRIPE_SECRET_KEY` | W6+ | Stripe secret (commission billing invoices) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | W6+ | Stripe public key |
 | `NEXT_PUBLIC_POSTHOG_KEY` | W6+ | PostHog analytics key |
@@ -413,6 +431,7 @@ class CarrierApiError extends Error {
 ```
 
 5 adapters live: **Amana, Aramex, CTM, Marocolis, Sendex** (`src/lib/carriers/adapters/`).
+Aramex has full `getTrackingStatus()` implementation. Others have stubs (throw `SERVICE_UNAVAILABLE`).
 New carriers are added by implementing this interface — zero changes to core logic.
 
 ---
