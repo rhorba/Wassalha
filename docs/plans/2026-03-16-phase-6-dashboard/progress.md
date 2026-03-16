@@ -98,21 +98,21 @@ Run after `pnpm dev` with a retailer + admin account available.
 
 | # | Scenario | Status |
 |---|----------|--------|
-| S1 | Retailer sees 6 KPI cards on /dashboard with real data | ⬜ |
-| S2 | New retailer (0 shipments) sees `—` in all KPI cards | ⬜ |
-| S3 | Admin sees 9 cards (6 + 3 pipeline) on /dashboard | ⬜ |
-| S4 | /analytics loads with 3 tabs + DateRangePicker | ⬜ |
-| S5 | Changing date range refetches + updates charts | ⬜ |
-| S6 | Tab switching: Volume → Dépenses → Transporteurs all render | ⬜ |
-| S7 | "Exporter CSV" downloads `wassalha-shipments-YYYY-MM-DD.csv` | ⬜ |
-| S8 | Retailer accessing /admin/billing redirects to /dashboard | ⬜ |
-| S9 | Admin billing page shows pipeline totals + retailer table | ⬜ |
+| S1 | Retailer sees 6 KPI cards on /dashboard with real data | ✅ |
+| S2 | New retailer (0 shipments) sees `—` in all KPI cards | ✅ |
+| S3 | Admin sees 9 cards (6 + 3 pipeline) on /dashboard | ✅ |
+| S4 | /analytics loads with 3 tabs + DateRangePicker | ✅ |
+| S5 | Changing date range refetches + updates charts | ✅ |
+| S6 | Tab switching: Volume → Dépenses → Transporteurs all render | ✅ |
+| S7 | "Exporter CSV" downloads `wassalha-shipments-YYYY-MM-DD.csv` | ✅ |
+| S8 | Retailer accessing /admin/billing redirects to /dashboard | ✅ |
+| S9 | Admin billing page shows pipeline totals + retailer table | ✅ |
 | S10 | "Générer facture" disabled when 0 MAD pending | ⬜ |
 | S11 | Generate Stripe invoice → toast + row disappears + invoice history | ⬜ |
-| S12 | Admin: /api/commissions/export downloads CSV | ⬜ |
-| S13 | Retailer: /api/commissions/export returns 403 | ⬜ |
-| S14 | Empty date range shows "Aucune donnée" — no JS errors | ⬜ |
-| S15 | Missing STRIPE_SECRET_KEY → invoice history shows empty list (not 500) | ⬜ |
-| S16 | Nav links respect role (retailer: no Facturation; admin: all links) | ⬜ |
+| S12 | Admin: /api/commissions/export downloads CSV | ✅ |
+| S13 | Retailer: /api/commissions/export returns 403 | ✅ |
+| S14 | Empty date range shows "Aucune donnée" — no JS errors | ✅ |
+| S15 | Missing STRIPE_SECRET_KEY → invoice history shows empty list (not 500) | ✅ |
+| S16 | Nav links respect role (retailer: no Facturation; admin: all links) | ✅ |
 
 ## Plan Status: COMPLETE ✅

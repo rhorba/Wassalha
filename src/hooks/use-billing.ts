@@ -11,6 +11,7 @@ export function useInvoices() {
       if (!res.ok) throw new Error("Failed to fetch invoices");
       return res.json() as Promise<InvoiceListRow[]>;
     },
+    retry: false,
   });
 }
 

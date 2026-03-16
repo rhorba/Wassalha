@@ -71,7 +71,12 @@ Carrier tracking integrations (Aramex + 4 stubs), unified tracking model, live s
 
 ### ✅ Phase 6 — Dashboard + Analytics (Week 6)
 
-Role-aware KPI dashboard (6 retailer cards + 3 admin pipeline cards), Recharts analytics (tabbed: volume/spend/carrier), CSV exports, Stripe commission billing (invoice generation + webhook). **Complete. 146 tests passing.**
+Role-aware KPI dashboard (6 retailer cards + 3 admin pipeline cards), Recharts analytics (tabbed: volume/spend/carrier), CSV exports, Stripe commission billing (invoice generation + webhook). **Complete. 146 tests passing. Smoke tests S1–S16 done (S10, S11 deferred — no test data / no Stripe test key). 3 bugs found and fixed during smoke testing.**
+
+**Smoke test bugs fixed:**
+- `analytics.ts` — raw SQL `c.` alias caused 500 on `/dashboard` (fixed: use Drizzle column refs)
+- `kpi-row.tsx` — showed `0` instead of `—` for new retailers with no shipments (fixed: null when `totalShipments === 0`)
+- `GET /api/billing/invoices` — `StripeAuthenticationError` not caught → 500 + TanStack Query retry storm (fixed: catch Stripe auth errors + `retry: false`)
 
 ### ⏳ Phase 7 — Landing Page + Onboarding (Week 7)
 

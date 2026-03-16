@@ -41,8 +41,11 @@ export async function GET() {
     const invoices = await listInvoices();
     return NextResponse.json(invoices);
   } catch (err) {
-    // Stripe key not configured — return empty list gracefully
-    if (err instanceof Error && err.message === "STRIPE_SECRET_KEY is not set") {
+    // Stripe not configured or key invalid — return empty list gracefully
+    if (
+      (err instanceof Error && err.message === "STRIPE_SECRET_KEY is not set") ||
+      (err as { type?: string })?.type === "StripeAuthenticationError"
+    ) {
       return NextResponse.json([]);
     }
     console.error("[GET /api/billing/invoices]", err);

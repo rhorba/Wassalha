@@ -17,15 +17,16 @@ interface KpiRowProps {
 }
 
 export function KpiRow({ summary, isAdmin }: KpiRowProps) {
+  const hasData = summary.totalShipments > 0;
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <StatCard title="Expéditions"      value={summary.totalShipments} />
-        <StatCard title="En cours"         value={summary.activeShipments} />
-        <StatCard title="Taux livraison"   value={`${summary.successRate}%`} />
-        <StatCard title="Dépenses"         value={formatMad(summary.totalSpendMad)} />
-        <StatCard title="COD collecté"     value={formatMad(summary.totalCodMad)} />
-        <StatCard title="Commission payée" value={formatMad(summary.commissionPaidMad)} />
+        <StatCard title="Expéditions"      value={hasData ? summary.totalShipments : null} />
+        <StatCard title="En cours"         value={hasData ? summary.activeShipments : null} />
+        <StatCard title="Taux livraison"   value={hasData ? `${summary.successRate}%` : null} />
+        <StatCard title="Dépenses"         value={hasData ? formatMad(summary.totalSpendMad) : null} />
+        <StatCard title="COD collecté"     value={hasData ? formatMad(summary.totalCodMad) : null} />
+        <StatCard title="Commission payée" value={hasData ? formatMad(summary.commissionPaidMad) : null} />
       </div>
 
       {isAdmin && summary.pipeline && (

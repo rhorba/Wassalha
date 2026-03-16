@@ -46,9 +46,9 @@ export async function getAnalyticsSummary(
 
   const [commRow] = await db
     .select({
-      paid:     sql<number>`coalesce(sum(c.total_commission_mad) filter (where c.status = 'paid'), 0)::int`,
-      pending:  sql<number>`coalesce(sum(c.total_commission_mad) filter (where c.status = 'pending'), 0)::int`,
-      invoiced: sql<number>`coalesce(sum(c.total_commission_mad) filter (where c.status = 'invoiced'), 0)::int`,
+      paid:     sql<number>`coalesce(sum(${commissions.totalCommissionMad}) filter (where ${commissions.status} = 'paid'), 0)::int`,
+      pending:  sql<number>`coalesce(sum(${commissions.totalCommissionMad}) filter (where ${commissions.status} = 'pending'), 0)::int`,
+      invoiced: sql<number>`coalesce(sum(${commissions.totalCommissionMad}) filter (where ${commissions.status} = 'invoiced'), 0)::int`,
     })
     .from(commissions)
     .leftJoin(shipments, eq(commissions.shipmentId, shipments.id))
