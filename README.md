@@ -23,7 +23,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | W3 | Comparison Engine | ✅ Done | Ranking algorithm live — users compare carriers by cost/speed/reliability |
 | W4 | Booking + Commission | ✅ Done | Full booking flow end-to-end — 99 tests passing |
 | W5 | Real-time Tracking | ✅ Done | Live tracking stepper + badge — 107 tests passing |
-| W6 | Dashboard + Analytics | ⏳ Planned | Full analytics dashboard live |
+| W6 | Dashboard + Analytics | ✅ Done | KPI dashboard + charts + Stripe billing — 146 tests passing |
 | W7 | Landing Page + Onboarding | ⏳ Planned | Landing page live, onboarding flow complete |
 | W8 | Testing + Launch Prep | ⏳ Planned | Beta live with 20 users, feedback loop active |
 
@@ -46,9 +46,9 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | Carrier tracking API integrations | ✅ | — | **W5** |
 | Live tracking dashboard | — | ✅ | **W5** |
 | Push notifications (status changes) | ⏳ | ⏳ | **W7** |
-| Retailer dashboard (shipments, spend, savings) | ⏳ | ⏳ | **W6** |
-| Commission/billing dashboard | ⏳ | ⏳ | **W6** |
-| Charts + CSV export | — | ⏳ | **W6** |
+| Retailer dashboard (KPIs, spend, success rate) | ✅ | ✅ | **W6** |
+| Commission/billing dashboard (Stripe invoices) | ✅ | ✅ | **W6** |
+| Charts + CSV export (Recharts, streaming CSV) | ✅ | ✅ | **W6** |
 | Marketing landing page | — | ⏳ | **W7** |
 | Onboarding wizard (3-step) | — | ⏳ | **W7** |
 | WhatsApp notification integration | ⏳ | — | **W7** |
@@ -199,19 +199,29 @@ wassalha/
 │   │   │   │   ├── [id]/zones/[zoneId]/pricing/route.ts          # GET, POST pricing
 │   │   │   │   ├── [id]/zones/[zoneId]/pricing/[pricingId]/route.ts  # DELETE pricing
 │   │   │   │   └── compare/route.ts   # POST comparison engine
+│   │   │   ├── analytics/             # Analytics ✅
+│   │   │   │   ├── summary/route.ts   # GET KPI cards
+│   │   │   │   └── charts/route.ts    # GET time-series + carrier breakdown
 │   │   │   ├── shipments/             # Booking ✅
 │   │   │   │   ├── route.ts           # POST book, GET list
-│   │   │   │   └── [id]/route.ts      # GET single
+│   │   │   │   ├── [id]/route.ts      # GET single
+│   │   │   │   └── export/route.ts    # GET CSV download
+│   │   │   ├── commissions/
+│   │   │   │   └── export/route.ts    # GET CSV download (admin) ✅
+│   │   │   ├── billing/
+│   │   │   │   └── invoices/route.ts  # POST create Stripe invoice, GET list (admin) ✅
 │   │   │   ├── cron/tracking/route.ts # Hourly tracking poller ✅
 │   │   │   ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
 │   │   │   │   ├── v1/shipping/shipments/create/route.ts
 │   │   │   │   └── v1/tracking/shipments/track/route.ts
-│   │   │   └── webhooks/clerk/route.ts # Clerk user sync ✅
+│   │   │   └── webhooks/
+│   │   │       ├── clerk/route.ts     # Clerk user sync ✅
+│   │   │       └── stripe/route.ts    # Stripe invoice.paid → mark commissions paid ✅
 │   │   ├── layout.tsx                 # Root layout (ClerkProvider + QueryProvider)
 │   │   ├── page.tsx                   # Landing page (placeholder)
 │   │   └── providers.tsx              # TanStack Query + Clerk providers
 │   ├── components/
-│   │   ├── ui/                        # shadcn/ui primitives (12 components) ✅
+│   │   ├── ui/                        # shadcn/ui primitives (16 components) ✅
 │   │   ├── carriers/                  # Carrier admin UI ✅
 │   │   │   ├── carrier-form.tsx
 │   │   │   ├── carrier-table.tsx
@@ -230,15 +240,28 @@ wassalha/
 │   │   ├── shipments/                 # Shipments table ✅
 │   │   │   ├── shipments-table.tsx
 │   │   │   └── status-badge.tsx       # Color-coded status badge ✅
-│   │   └── tracking/                  # Tracking UI ✅
-│   │       ├── tracking-timeline.tsx  # Live stepper component ✅
-│   │       └── live-shipment-detail.tsx # LiveStatusBadge (Realtime + polling) ✅
+│   │   ├── tracking/                  # Tracking UI ✅
+│   │   │   ├── tracking-timeline.tsx  # Live stepper component ✅
+│   │   │   └── live-shipment-detail.tsx # LiveStatusBadge (Realtime + polling) ✅
+│   │   ├── dashboard/                 # KPI dashboard ✅
+│   │   │   ├── stat-card.tsx          # Reusable metric card
+│   │   │   └── kpi-row.tsx            # 6-card retailer row + 3-card admin pipeline
+│   │   ├── analytics/                 # Analytics charts ✅
+│   │   │   ├── chart-panel.tsx        # Tabbed chart panel (TanStack Query)
+│   │   │   ├── date-range-picker.tsx  # Popover date range selector
+│   │   │   └── charts/
+│   │   │       ├── volume-chart.tsx   # BarChart — shipments/week
+│   │   │       ├── spend-chart.tsx    # LineChart — spend + commission dual-axis
+│   │   │       └── carrier-chart.tsx  # PieChart — carrier breakdown
+│   │   └── billing/                   # Billing UI (admin) ✅
+│   │       ├── retailer-billing-table.tsx  # Generate Stripe invoice per retailer
+│   │       └── invoice-history-table.tsx   # Stripe invoice list + PDF links
 │   ├── lib/
 │   │   ├── db/
 │   │   │   ├── schema/                # users, carriers, carrier_zones,
 │   │   │   │                          # carrier_pricing, shipments, commissions,
 │   │   │   │                          # tracking_events ✅
-│   │   │   ├── migrations/            # 0000–0004 applied ✅
+│   │   │   ├── migrations/            # 0000–0005 applied ✅
 │   │   │   ├── seed.ts                # 5 carriers seeded ✅
 │   │   │   └── index.ts               # Drizzle + pg Pool client
 │   │   ├── carriers/
@@ -251,7 +274,9 @@ wassalha/
 │   │   │   ├── comparison.ts          # Ranking algorithm ✅
 │   │   │   ├── bookings.ts            # createBooking, listShipments ✅
 │   │   │   ├── commission.ts          # calculateCommission (dual-rate) ✅
-│   │   │   └── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
+│   │   │   ├── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
+│   │   │   ├── analytics.ts           # getAnalyticsSummary, getAnalyticsCharts ✅
+│   │   │   └── billing.ts             # getRetailersBillingOverview, createRetailerInvoice ✅
 │   │   ├── supabase/
 │   │   │   └── client.ts              # Supabase client (Realtime) ✅
 │   │   ├── notifications/
@@ -269,8 +294,11 @@ wassalha/
 │   │   ├── use-create-shipment.ts     # Booking mutation hook ✅
 │   │   ├── use-shipments.ts           # Shipments query hook ✅
 │   │   ├── use-shipment-status.ts     # Realtime + 10s polling status hook ✅
-│   │   └── use-tracking-events.ts     # Realtime INSERT events hook ✅
-│   ├── middleware.ts                  # Clerk auth — protects /dashboard, /admin ✅
+│   │   ├── use-tracking-events.ts     # Realtime INSERT events hook ✅
+│   │   ├── use-analytics-summary.ts   # KPI cards query hook ✅
+│   │   ├── use-analytics-charts.ts    # Chart data query hook ✅
+│   │   └── use-billing.ts             # Invoice list + create mutation hook ✅
+│   ├── middleware.ts                  # Clerk auth — protects /dashboard, /analytics, /admin ✅
 │   └── test-setup.ts                  # Vitest + @testing-library/jest-dom setup
 ├── docs/plans/                        # Implementation plans + progress
 ├── docs/mds/                          # Strategic docs (charter, stakeholder register)
@@ -327,10 +355,28 @@ GET    /api/cron/tracking           Cron job — poll active shipments, upsert t
 POST   /api/webhooks/clerk          Clerk webhook — sync user to DB on sign-up
 ```
 
-### Planned (Phase 6+)
+#### Analytics (Phase 6)
 ```
-GET    /api/commissions             Billing dashboard data (Phase 6)
-GET    /api/analytics               Retailer analytics (Phase 6)
+GET    /api/analytics/summary       KPI cards — totals, rates, commission pipeline (RBAC)
+GET    /api/analytics/charts        Time-series + carrier breakdown (date range filter)
+```
+
+#### CSV Export (Phase 6)
+```
+GET    /api/shipments/export        Download shipments CSV (retailer: own; admin: all)
+GET    /api/commissions/export      Download commissions CSV (admin only)
+```
+
+#### Billing (Phase 6)
+```
+POST   /api/billing/invoices        Create Stripe invoice for a retailer (admin only)
+GET    /api/billing/invoices        List Stripe invoices with status (admin only)
+POST   /api/webhooks/stripe         Stripe webhook — invoice.paid → marks commissions paid
+```
+
+### Planned (Phase 7+)
+```
+POST   /api/notifications/whatsapp  WhatsApp recipient notification (Phase 7)
 ```
 
 ---
@@ -344,7 +390,7 @@ GET    /api/analytics               Retailer analytics (Phase 6)
 | `carrier_zones` | ✅ Live | Coverage zones per carrier |
 | `carrier_pricing` | ✅ Live | Pricing tiers per zone (stored in centimes) |
 | `shipments` | ✅ Live | Shipment records — status, recipient, tracking number, COD amount |
-| `commissions` | ✅ Live | Per-shipment commission (10% shipping + 1.5% COD) |
+| `commissions` | ✅ Live | Per-shipment commission (10% shipping + 1.5% COD) — `stripeInvoiceId` added W6 |
 | `tracking_events` | ✅ Live | Status change history per shipment — upsert keyed on (shipment_id, occurred_at, carrier_raw_status) |
 | `notifications` | ⏳ W7 | WhatsApp/email notification log |
 | `audit_logs` | ⏳ W8 | System audit trail |
@@ -379,8 +425,9 @@ GET    /api/analytics               Retailer analytics (Phase 6)
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ W5 | Supabase service role key |
 | `CRON_SECRET` | ✅ W5 | Bearer token protecting `/api/cron/tracking` — generate with `openssl rand -hex 32` |
 | `NEXT_PUBLIC_MAPBOX_TOKEN` | W6+ | Mapbox access token (route visualization) |
-| `STRIPE_SECRET_KEY` | W6+ | Stripe secret (commission billing invoices) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | W6+ | Stripe public key |
+| `STRIPE_SECRET_KEY` | ✅ W6 | Stripe secret (commission billing invoices) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ✅ W6 | Stripe public key |
+| `STRIPE_WEBHOOK_SECRET` | ✅ W6 | Stripe webhook signing secret (invoice.paid event) |
 | `NEXT_PUBLIC_POSTHOG_KEY` | W6+ | PostHog analytics key |
 | `SENTRY_DSN` | W8+ | Sentry error tracking DSN |
 

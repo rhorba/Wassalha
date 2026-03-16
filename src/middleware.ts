@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isDashboard = createRouteMatcher(["/dashboard(.*)"]);
+const isDashboard = createRouteMatcher(["/dashboard(.*)", "/analytics(.*)", "/compare(.*)", "/shipments(.*)"]);
 const isAdmin = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {

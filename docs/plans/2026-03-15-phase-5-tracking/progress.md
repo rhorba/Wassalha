@@ -83,8 +83,38 @@
 - `__mock__` folder name: Next.js App Router ignores folders starting with `_` — renamed to `mock-aramex`
 - Supabase Realtime UPDATE not firing: `postgres_changes` filter requires RLS or server-side support. Root cause: `CHANNEL_ERROR mismatch between server and client bindings` when filter removed; silent no-events when filter kept. Fixed by adding **10s polling fallback** to `useShipmentStatus` alongside the Realtime subscription. DB confirmed: `REPLICA IDENTITY FULL` set on both tables, both in `supabase_realtime` publication, all roles have SELECT — Realtime infra correct but subscription unreliable for UPDATE events.
 
-### Part 4 — Edge Cases ⏳
-- Deferred to next session.
+### Part 4 — Edge Cases (in progress) — 2026-03-16
+
+| # | Scenario | Status |
+|---|----------|--------|
+| 1 | Shipment older than 14 days not polled | ✅ |
+| 2 | Delivered shipment not polled | ✅ |
+| 3 | Carrier API down → errors:1, others processed | ✅ |
+| 4 | Duplicate cron run → no duplicate tracking_events | ✅ |
+| 5 | Unauthorized cron call → 401 | ✅ |
+| 6 | Detail page for non-existent shipment → 404 | ✅ |
+| 7 | Retailer accessing another user's shipment → 404 | ✅ |
+
+**Case 1 — stale shipment (15d old):** set shipment to `in_transit` + `created_at=15d ago`, triggered cron → `{ ok: true, processed: 0, errors: 0 }` ✅
+Script: `scripts/edge-case-1-old-shipment.ts`
+
+**Case 2 — delivered shipment (terminal status):** set shipment to `delivered` + `created_at=today` (fresh, so age-filter doesn't interfere), triggered cron → `{ ok: true, processed: 0, errors: 0 }` ✅
+Script: `scripts/edge-case-2-delivered.ts`
+
+**Case 3 — carrier API down:** set both shipments to `in_transit+today` — shipment A → aramex (mock works), shipment B → amana (stub throws `SERVICE_UNAVAILABLE`). Cron → `{ ok: true, processed: 2, errors: 1 }` ✅ Per-shipment error isolation confirmed.
+Script: `scripts/edge-case-3-carrier-down.ts`
+
+**Case 4 — duplicate cron run:** first run wrote 4 new events (10→14); second run wrote 0 (`onConflictDoNothing` on `(shipmentId, occurredAt, carrierRawStatus)` key). Count stable at 14 ✅
+Script: `scripts/edge-case-4-duplicate-cron.ts`
+
+**Case 5 — unauthorized cron call:** `curl` without `Authorization` header → HTTP 401 `{"error":"Unauthorized"}` ✅
+
+**Case 6 — non-existent shipment detail page:** route is auth-protected (307 redirect when unauthenticated). Code-verified: `getShipmentById` returns `null` when `findFirst` finds nothing (bookings.ts:148) → page calls `notFound()` (page.tsx:22) → Next.js 404. ✅
+
+**Case 7 — RBAC: retailer accessing another user's shipment:** called `getShipmentById` directly at service layer. (A) correct owner+retailer → shipment returned ✅ (B) wrong userId+retailer → null → notFound() ✅ (C) wrong userId+admin → shipment returned (admin bypass) ✅
+Script: `scripts/edge-case-7-rbac.ts`
+
+### Part 4 — Complete ✅ (all 7 edge cases verified — 2026-03-16)
 
 ## Infrastructure Setup — 2026-03-15
 - Supabase project: `wassalha` (hrxbzafwaldwqeiswzlu)

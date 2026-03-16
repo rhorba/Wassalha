@@ -60,6 +60,7 @@ export const commissions = pgTable(
     codFeeAmountMad:      integer("cod_fee_amount_mad").notNull(),       // centimes
     totalCommissionMad:   integer("total_commission_mad").notNull(),     // centimes
     status:               commissionStatusEnum("status").notNull().default("pending"),
+    stripeInvoiceId:      text("stripe_invoice_id"),
     createdAt:            timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [unique("commissions_shipment_id_unique").on(t.shipmentId)],

@@ -69,9 +69,9 @@ One-click booking (BookingSheet → carrier adapter → atomic DB transaction), 
 
 Carrier tracking integrations (Aramex + 4 stubs), unified tracking model, live stepper + badge, cron poller (hourly), Supabase Realtime + polling fallback. **Complete. 107 tests passing. Test plan Parts 1–3 done. Part 4 (edge cases) in progress.**
 
-### ⏳ Phase 6 — Dashboard + Analytics (Week 6)
+### ✅ Phase 6 — Dashboard + Analytics (Week 6)
 
-Retailer dashboard, commission billing dashboard, charts, CSV export.
+Role-aware KPI dashboard (6 retailer cards + 3 admin pipeline cards), Recharts analytics (tabbed: volume/spend/carrier), CSV exports, Stripe commission billing (invoice generation + webhook). **Complete. 146 tests passing.**
 
 ### ⏳ Phase 7 — Landing Page + Onboarding (Week 7)
 
@@ -96,9 +96,10 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 | Carrier Comparison Engine | ✅ | ✅ | Ranking: cost, speed, reliability — 99 tests |
 | One-click Booking | ✅ | ✅ | CarrierAdapter → atomic TX → Resend email + WhatsApp |
 | Commission Engine | ✅ | ✅ | Dual-rate: 10% shipping + 1.5% COD |
-| Real-time GPS Tracking | ✅ | ✅ | Supabase Realtime + 10s polling fallback. Mapbox deferred Phase 6. |
-| Retailer Dashboard | ⏳ | ⏳ | Shipments, spend, savings |
-| Analytics + Charts | ⏳ | ⏳ | Recharts, export CSV |
+| Real-time GPS Tracking | ✅ | ✅ | Supabase Realtime + 10s polling fallback. Mapbox deferred Phase 7. |
+| Retailer Dashboard | ✅ | ✅ | KPI row (6 cards) + recent shipments |
+| Analytics + Charts | ✅ | ✅ | Recharts tabbed panel, DateRangePicker, CSV export |
+| Commission Billing | ✅ | ✅ | Stripe invoices — admin generates per-retailer invoices, webhook marks paid |
 | Marketing Landing Page | ⏳ | ⏳ | Full copywriting applied |
 | Onboarding Wizard | ⏳ | ⏳ | 3-step setup |
 | WhatsApp Notifications | ⏳ | ⏳ | WhatsApp Business API |
@@ -106,12 +107,14 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 
 ### 📊 Codebase Metrics
 
-**Current (Phase 5 complete):**
-- Drizzle schema: 7 tables live — users, carriers, carrier_zones, carrier_pricing, shipments, commissions, tracking_events
-- Migrations: 5 applied (0000–0004)
-- API routes: 14 route files live (carriers CRUD×7, compare, shipments×2, cron/tracking, mock-aramex×2, webhooks/clerk)
-- React components: 22 built (12 shadcn/ui primitives + 10 feature components)
-- Tests: 107 passing
+**Current (Phase 6 complete):**
+- Drizzle schema: 7 tables live — users (+stripeCustomerId), carriers, carrier_zones, carrier_pricing, shipments, commissions (+stripeInvoiceId), tracking_events
+- Migrations: 6 applied (0000–0005)
+- API routes: 21 route files live (carriers CRUD×7, compare, shipments×3, commissions/export, analytics×2, billing/invoices, cron/tracking, mock-aramex×2, webhooks/clerk, webhooks/stripe)
+- React components: 32 built (16 shadcn/ui primitives + 16 feature components)
+- Services: 6 (carriers, comparison, bookings, commission, tracking, analytics, billing)
+- Hooks: 9 TanStack Query hooks
+- Tests: 146 passing
 
 **Planned (Phases 6–8):**
 - Additional tables: notifications, audit_logs
@@ -137,13 +140,18 @@ wassalha/
 │   │   │   ├── compare/               # Carrier comparison ✅
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── compare-page-client.tsx
+│   │   │   ├── analytics/             # Analytics charts ✅
+│   │   │   │   └── page.tsx
 │   │   │   ├── shipments/             # Shipments ✅
 │   │   │   │   ├── page.tsx           # Shipments list
 │   │   │   │   └── [id]/page.tsx      # Shipment detail + live tracking
-│   │   │   └── admin/carriers/        # Carrier admin CRUD (admin only) ✅
-│   │   │       ├── page.tsx
-│   │   │       ├── new/page.tsx
-│   │   │       └── [id]/page.tsx
+│   │   │   └── admin/
+│   │   │       ├── carriers/          # Carrier admin CRUD (admin only) ✅
+│   │   │       │   ├── page.tsx
+│   │   │       │   ├── new/page.tsx
+│   │   │       │   └── [id]/page.tsx
+│   │   │       └── billing/           # Commission billing (admin only) ✅
+│   │   │           └── page.tsx
 │   │   ├── api/                       # Next.js API Routes
 │   │   │   ├── carriers/              # Carrier CRUD + comparison ✅
 │   │   │   │   ├── route.ts           # GET list, POST create
@@ -203,7 +211,9 @@ wassalha/
 │   │   │   ├── comparison.ts          # Ranking algorithm ✅
 │   │   │   ├── bookings.ts            # createBooking, listShipments ✅
 │   │   │   ├── commission.ts          # calculateCommission (dual-rate) ✅
-│   │   │   └── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
+│   │   │   ├── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
+│   │   │   ├── analytics.ts           # getAnalyticsSummary, getAnalyticsCharts ✅
+│   │   │   └── billing.ts             # getRetailersBillingOverview, createRetailerInvoice ✅
 │   │   ├── supabase/
 │   │   │   └── client.ts              # Supabase client (Realtime) ✅
 │   │   ├── notifications/
@@ -221,8 +231,11 @@ wassalha/
 │   │   ├── use-create-shipment.ts     # Booking mutation hook ✅
 │   │   ├── use-shipments.ts           # Shipments query hook ✅
 │   │   ├── use-shipment-status.ts     # Realtime + 10s polling status hook ✅
-│   │   └── use-tracking-events.ts     # Realtime INSERT events hook ✅
-│   ├── middleware.ts                  # Clerk auth — protects /dashboard, /admin ✅
+│   │   ├── use-tracking-events.ts     # Realtime INSERT events hook ✅
+│   │   ├── use-analytics-summary.ts   # KPI summary query hook ✅
+│   │   ├── use-analytics-charts.ts    # Chart data query hook ✅
+│   │   └── use-billing.ts             # Invoice list + create mutation hook ✅
+│   ├── middleware.ts                  # Clerk auth — protects /dashboard, /analytics, /admin ✅
 │   └── test-setup.ts                  # Vitest + @testing-library/jest-dom setup
 ├── docs/plans/                        # Implementation plans + progress
 ├── docs/mds/                          # Strategic docs

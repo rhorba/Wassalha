@@ -36,6 +36,13 @@
       "when": 1773590237749,
       "tag": "0004_sparkling_sharon_carter",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773663248919,
+      "tag": "0005_chief_electro",
+      "breakpoints": true
     }
   ]
 }
