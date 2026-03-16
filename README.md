@@ -340,11 +340,11 @@ GET    /api/analytics               Retailer analytics (Phase 6)
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | ✅ Now | Google Maps API key (address autocomplete) |
 | `RESEND_API_KEY` | ✅ W4 | Resend email API key — booking confirmation emails |
 | `RESEND_FROM_EMAIL` | ✅ W4 | Sender address (use `onboarding@resend.dev` until domain verified) |
-| `AMANA_API_URL` / `AMANA_API_KEY` / `AMANA_ACCOUNT_ID` | W4+ | Amana Maroc carrier credentials |
-| `ARAMEX_API_URL` / `ARAMEX_USERNAME` / `ARAMEX_PASSWORD` / `ARAMEX_ACCOUNT_NUMBER` / `ARAMEX_ACCOUNT_PIN` | W4+ | Aramex carrier credentials |
-| `CTM_API_URL` / `CTM_API_KEY` | W4+ | CTM Messagerie carrier credentials |
-| `MAROCOLIS_API_URL` / `MAROCOLIS_CLIENT_ID` / `MAROCOLIS_CLIENT_SECRET` | W4+ | Marocolis carrier credentials |
-| `SENDEX_API_URL` / `SENDEX_API_TOKEN` | W4+ | Sendex carrier credentials |
+| `AMANA_API_URL` / `AMANA_API_KEY` / `AMANA_ACCOUNT_ID` | ✅ W4 | Amana Maroc carrier credentials |
+| `ARAMEX_API_URL` / `ARAMEX_USERNAME` / `ARAMEX_PASSWORD` / `ARAMEX_ACCOUNT_NUMBER` / `ARAMEX_ACCOUNT_PIN` | ✅ W4 | Aramex carrier credentials |
+| `CTM_API_URL` / `CTM_API_KEY` | ✅ W4 | CTM Messagerie carrier credentials |
+| `MAROCOLIS_API_URL` / `MAROCOLIS_CLIENT_ID` / `MAROCOLIS_CLIENT_SECRET` | ✅ W4 | Marocolis carrier credentials |
+| `SENDEX_API_URL` / `SENDEX_API_TOKEN` | ✅ W4 | Sendex carrier credentials |
 | `WHATSAPP_API_TOKEN` | W7+ | WhatsApp Business API token (Meta) |
 | `WHATSAPP_PHONE_ID` | W7+ | WhatsApp phone number ID |
 | `WHATSAPP_TEMPLATE_NAME` | W7+ | Approved message template name |
