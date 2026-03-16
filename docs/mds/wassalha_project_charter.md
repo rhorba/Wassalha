@@ -24,7 +24,7 @@ Approved by: [Project Sponsor Name]
 | **Project Manager** | [PM Name] |
 | **Project Sponsor** | [Sponsor Name] |
 | **Priority** | HIGH |
-| **Status** | Initiation |
+| **Status** | In Progress — Week 5 of 8 complete |
 
 ---
 
@@ -88,20 +88,21 @@ Wassalha addresses this gap by building a B2B delivery aggregation platform that
 
 ## 6. Technology Stack
 
-| Component | Technology |
-|-----------|------------|
-| Frontend | Next.js 15 (App Router) + TypeScript + Tailwind CSS 4 + shadcn/ui |
-| Backend | Next.js API Routes / Hono (lightweight API layer) |
-| Database | PostgreSQL via Supabase or Neon + Drizzle ORM |
-| Authentication | Clerk or NextAuth.js v5 |
-| Real-time | Supabase Realtime / Socket.io for live tracking |
-| Maps / Geocoding | Google Maps API or Mapbox |
-| Payments | Stripe (commission billing) + CMI (local Moroccan cards) |
-| Notifications | WhatsApp Business API + Resend (email) |
-| Deployment | Vercel (frontend) + Railway / Fly.io (services) |
-| CI/CD | GitHub Actions |
-| Monitoring | Sentry (errors) + PostHog (analytics) |
-| Testing | Playwright (E2E) + Vitest (unit) |
+| Component | Technology | Status |
+|-----------|------------|--------|
+| Frontend | Next.js 15 (App Router) + TypeScript + Tailwind CSS 4 + shadcn/ui | ✅ Live |
+| Backend | Next.js API Routes (TypeScript) | ✅ Live |
+| Database | PostgreSQL via Supabase + Drizzle ORM (5 migrations applied) | ✅ Live |
+| Authentication | Clerk (hosted UI + publicMetadata role + JWT) | ✅ Live |
+| Real-time | Supabase Realtime + 10s polling fallback | ✅ Live (Phase 5) |
+| Maps / Geocoding | Google Maps API (address autocomplete, Morocco-restricted) | ✅ Live |
+| Payments | Stripe (commission billing invoices) | ⏳ Phase 6 |
+| Email | Resend (booking confirmation) | ✅ Live (Phase 4) |
+| Notifications | WhatsApp Business API | ⏳ Phase 7 |
+| Deployment | Vercel (frontend) | ⏳ Phase 8 |
+| CI/CD | GitHub Actions (lint + tsc + vitest + build) | ✅ Live |
+| Monitoring | Sentry (errors) + PostHog (analytics) | ⏳ Phase 8 |
+| Testing | Vitest (107 unit tests) + Playwright (E2E — Phase 8) | ✅ Unit live |
 
 ---
 
@@ -109,14 +110,14 @@ Wassalha addresses this gap by building a B2B delivery aggregation platform that
 
 | Week | Milestone | Exit Criteria | Status |
 |------|-----------|---------------|--------|
-| W1 | Foundation + Auth live | Login works, DB migrated | Planned |
-| W2 | Address + Carrier data ready | Autocomplete works, 5 carriers seeded | Planned |
-| W3 | Comparison engine working | User sees ranked carrier list | Planned |
-| W4 | Booking end-to-end | Full booking + confirmation email | Planned |
-| W5 | Live tracking dashboard | Real-time status updates visible | Planned |
-| W6 | Analytics + dashboards | Retailer sees spend, savings, stats | Planned |
-| W7 | Landing page + onboarding | Page live, onboarding wizard tested | Planned |
-| W8 | Beta launch | 20 retailers active, feedback loop live | Planned |
+| W1 | Foundation + Auth live | Login works, DB migrated | ✅ Done |
+| W2 | Address + Carrier data ready | Autocomplete works, 5 carriers seeded | ✅ Done |
+| W3 | Comparison engine working | User sees ranked carrier list | ✅ Done |
+| W4 | Booking end-to-end | Full booking + confirmation email | ✅ Done |
+| W5 | Live tracking dashboard | Real-time status updates visible | ✅ Done |
+| W6 | Analytics + dashboards | Retailer sees spend, savings, stats | ⏳ Planned |
+| W7 | Landing page + onboarding | Page live, onboarding wizard tested | ⏳ Planned |
+| W8 | Beta launch | 20 retailers active, feedback loop live | ⏳ Planned |
 
 ---
 

@@ -109,8 +109,8 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 **Current (Phase 5 complete):**
 - Drizzle schema: 7 tables live — users, carriers, carrier_zones, carrier_pricing, shipments, commissions, tracking_events
 - Migrations: 5 applied (0000–0004)
-- API routes: 12 endpoints live (+ cron/tracking + mock-aramex)
-- React components: ~20 built
+- API routes: 14 route files live (carriers CRUD×7, compare, shipments×2, cron/tracking, mock-aramex×2, webhooks/clerk)
+- React components: 22 built (12 shadcn/ui primitives + 10 feature components)
 - Tests: 107 passing
 
 **Planned (Phases 6–8):**
@@ -127,31 +127,47 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 wassalha/
 ├── src/
 │   ├── app/                           # Next.js 15 App Router
+│   │   ├── (auth)/                    # Clerk hosted auth pages
+│   │   │   ├── layout.tsx
+│   │   │   ├── sign-in/[[...sign-in]]/page.tsx
+│   │   │   └── sign-up/[[...sign-up]]/page.tsx
 │   │   ├── (dashboard)/               # Protected dashboard routes (Clerk middleware)
 │   │   │   ├── layout.tsx             # Dashboard shell
 │   │   │   ├── dashboard/page.tsx     # Dashboard home
 │   │   │   ├── compare/               # Carrier comparison ✅
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── compare-page-client.tsx
-│   │   │   ├── shipments/page.tsx     # Shipments list ✅
+│   │   │   ├── shipments/             # Shipments ✅
+│   │   │   │   ├── page.tsx           # Shipments list
+│   │   │   │   └── [id]/page.tsx      # Shipment detail + live tracking
 │   │   │   └── admin/carriers/        # Carrier admin CRUD (admin only) ✅
+│   │   │       ├── page.tsx
+│   │   │       ├── new/page.tsx
+│   │   │       └── [id]/page.tsx
 │   │   ├── api/                       # Next.js API Routes
 │   │   │   ├── carriers/              # Carrier CRUD + comparison ✅
 │   │   │   │   ├── route.ts           # GET list, POST create
 │   │   │   │   ├── [id]/route.ts      # GET, PUT, DELETE
-│   │   │   │   ├── [id]/zones/        # Zone CRUD
-│   │   │   │   ├── [id]/zones/[zoneId]/pricing/  # Pricing CRUD
+│   │   │   │   ├── [id]/zones/route.ts
+│   │   │   │   ├── [id]/zones/[zoneId]/route.ts
+│   │   │   │   ├── [id]/zones/[zoneId]/pricing/route.ts
+│   │   │   │   ├── [id]/zones/[zoneId]/pricing/[pricingId]/route.ts
 │   │   │   │   └── compare/route.ts   # POST comparison engine
 │   │   │   ├── shipments/             # Booking ✅
 │   │   │   │   ├── route.ts           # POST book, GET list
 │   │   │   │   └── [id]/route.ts      # GET single
+│   │   │   ├── cron/tracking/route.ts # Hourly tracking poller ✅
+│   │   │   ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
 │   │   │   └── webhooks/clerk/route.ts # Clerk user sync ✅
-│   │   ├── sign-in/[[...sign-in]]/    # Clerk hosted sign-in
-│   │   ├── sign-up/[[...sign-up]]/    # Clerk hosted sign-up
 │   │   ├── layout.tsx                 # Root layout (providers)
-│   │   └── page.tsx                   # Landing page (placeholder)
+│   │   ├── page.tsx                   # Landing page (placeholder)
+│   │   └── providers.tsx              # TanStack Query + Clerk providers
 │   ├── components/
-│   │   ├── ui/                        # shadcn/ui primitives ✅
+│   │   ├── ui/                        # shadcn/ui primitives (12 components) ✅
+│   │   ├── carriers/                  # Carrier admin UI ✅
+│   │   │   ├── carrier-form.tsx
+│   │   │   ├── carrier-table.tsx
+│   │   │   └── zone-accordion.tsx
 │   │   ├── compare/                   # Comparison UI ✅
 │   │   │   ├── compare-form.tsx
 │   │   │   ├── results-list.tsx
@@ -161,13 +177,20 @@ wassalha/
 │   │   ├── booking/                   # Booking sheet ✅
 │   │   │   ├── booking-sheet.tsx
 │   │   │   └── booking-form.tsx
-│   │   └── shipments/                 # Shipments table ✅
-│   │       └── shipments-table.tsx
+│   │   ├── forms/                     # Shared form components ✅
+│   │   │   └── address-autocomplete.tsx
+│   │   ├── shipments/                 # Shipments table ✅
+│   │   │   ├── shipments-table.tsx
+│   │   │   └── status-badge.tsx
+│   │   └── tracking/                  # Tracking UI ✅
+│   │       ├── tracking-timeline.tsx
+│   │       └── live-shipment-detail.tsx
 │   ├── lib/
 │   │   ├── db/
 │   │   │   ├── schema/                # users, carriers, carrier_zones,
-│   │   │   │   │                      # carrier_pricing, shipments, commissions ✅
-│   │   │   ├── migrations/            # 0000–0003 applied ✅
+│   │   │   │                          # carrier_pricing, shipments, commissions,
+│   │   │   │                          # tracking_events ✅
+│   │   │   ├── migrations/            # 0000–0004 applied ✅
 │   │   │   ├── seed.ts                # 5 carriers seeded ✅
 │   │   │   └── index.ts               # Drizzle + pg Pool client
 │   │   ├── carriers/
@@ -179,22 +202,35 @@ wassalha/
 │   │   │   ├── carriers.ts            # Carrier CRUD ✅
 │   │   │   ├── comparison.ts          # Ranking algorithm ✅
 │   │   │   ├── bookings.ts            # createBooking, listShipments ✅
-│   │   │   └── commission.ts          # calculateCommission (dual-rate) ✅
+│   │   │   ├── commission.ts          # calculateCommission (dual-rate) ✅
+│   │   │   └── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
+│   │   ├── supabase/
+│   │   │   └── client.ts              # Supabase client (Realtime) ✅
 │   │   ├── notifications/
 │   │   │   ├── email.ts               # Resend confirmation email ✅
-│   │   │   └── whatsapp.ts            # WhatsApp Business API ✅
+│   │   │   └── whatsapp.ts            # WhatsApp Business API (Phase 7) ✅
+│   │   ├── utils/
+│   │   │   └── clerk-webhook.ts       # Clerk user sync handler ✅
+│   │   ├── utils.ts                   # Shared utility functions ✅
 │   │   └── validations/
 │   │       ├── carriers.ts            # Carrier + compare Zod schemas ✅
 │   │       └── shipments.ts           # BookingInput + response schemas ✅
-│   └── hooks/
-│       ├── use-carriers.ts            # TanStack Query carrier hooks ✅
-│       ├── use-compare.ts             # Comparison mutation hook ✅
-│       ├── use-create-shipment.ts     # Booking mutation hook ✅
-│       └── use-shipments.ts           # Shipments query hook ✅
+│   ├── hooks/
+│   │   ├── use-carriers.ts            # TanStack Query carrier hooks ✅
+│   │   ├── use-compare.ts             # Comparison mutation hook ✅
+│   │   ├── use-create-shipment.ts     # Booking mutation hook ✅
+│   │   ├── use-shipments.ts           # Shipments query hook ✅
+│   │   ├── use-shipment-status.ts     # Realtime + 10s polling status hook ✅
+│   │   └── use-tracking-events.ts     # Realtime INSERT events hook ✅
+│   ├── middleware.ts                  # Clerk auth — protects /dashboard, /admin ✅
+│   └── test-setup.ts                  # Vitest + @testing-library/jest-dom setup
 ├── docs/plans/                        # Implementation plans + progress
+├── docs/mds/                          # Strategic docs
 ├── drizzle.config.ts
+├── vitest.config.ts
 ├── next.config.ts
 ├── tsconfig.json
+├── components.json                    # shadcn/ui config
 ├── .env.example
 ├── .github/workflows/ci.yml           # lint + tsc + vitest + build
 ├── package.json

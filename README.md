@@ -173,33 +173,49 @@ pnpm start
 wassalha/
 ├── src/
 │   ├── app/                           # Next.js 15 App Router
+│   │   ├── (auth)/                    # Clerk hosted auth pages
+│   │   │   ├── layout.tsx
+│   │   │   ├── sign-in/[[...sign-in]]/page.tsx
+│   │   │   └── sign-up/[[...sign-up]]/page.tsx
 │   │   ├── (dashboard)/               # Protected routes (Clerk middleware)
 │   │   │   ├── layout.tsx             # Dashboard shell
 │   │   │   ├── dashboard/page.tsx     # Dashboard home
 │   │   │   ├── compare/               # Carrier comparison ✅
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── compare-page-client.tsx
-│   │   │   ├── shipments/page.tsx     # Shipments list ✅
+│   │   │   ├── shipments/             # Shipments ✅
+│   │   │   │   ├── page.tsx           # Shipments list
+│   │   │   │   └── [id]/page.tsx      # Shipment detail + live tracking
 │   │   │   └── admin/carriers/        # Carrier admin CRUD (admin only) ✅
+│   │   │       ├── page.tsx           # Carrier list
+│   │   │       ├── new/page.tsx       # Create carrier
+│   │   │       └── [id]/page.tsx      # Edit carrier
 │   │   ├── api/                       # Next.js API Routes
 │   │   │   ├── carriers/              # Carrier CRUD + comparison ✅
 │   │   │   │   ├── route.ts           # GET list, POST create
 │   │   │   │   ├── [id]/route.ts      # GET, PUT, DELETE
-│   │   │   │   ├── [id]/zones/        # Zone CRUD
-│   │   │   │   ├── [id]/zones/[zoneId]/pricing/  # Pricing CRUD
+│   │   │   │   ├── [id]/zones/route.ts           # GET, POST zones
+│   │   │   │   ├── [id]/zones/[zoneId]/route.ts  # DELETE zone
+│   │   │   │   ├── [id]/zones/[zoneId]/pricing/route.ts          # GET, POST pricing
+│   │   │   │   ├── [id]/zones/[zoneId]/pricing/[pricingId]/route.ts  # DELETE pricing
 │   │   │   │   └── compare/route.ts   # POST comparison engine
 │   │   │   ├── shipments/             # Booking ✅
 │   │   │   │   ├── route.ts           # POST book, GET list
 │   │   │   │   └── [id]/route.ts      # GET single
 │   │   │   ├── cron/tracking/route.ts # Hourly tracking poller ✅
 │   │   │   ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
+│   │   │   │   ├── v1/shipping/shipments/create/route.ts
+│   │   │   │   └── v1/tracking/shipments/track/route.ts
 │   │   │   └── webhooks/clerk/route.ts # Clerk user sync ✅
-│   │   ├── sign-in/[[...sign-in]]/    # Clerk hosted sign-in
-│   │   ├── sign-up/[[...sign-up]]/    # Clerk hosted sign-up
-│   │   ├── layout.tsx                 # Root layout (providers)
-│   │   └── page.tsx                   # Landing page (placeholder)
+│   │   ├── layout.tsx                 # Root layout (ClerkProvider + QueryProvider)
+│   │   ├── page.tsx                   # Landing page (placeholder)
+│   │   └── providers.tsx              # TanStack Query + Clerk providers
 │   ├── components/
-│   │   ├── ui/                        # shadcn/ui primitives ✅
+│   │   ├── ui/                        # shadcn/ui primitives (12 components) ✅
+│   │   ├── carriers/                  # Carrier admin UI ✅
+│   │   │   ├── carrier-form.tsx
+│   │   │   ├── carrier-table.tsx
+│   │   │   └── zone-accordion.tsx
 │   │   ├── compare/                   # Comparison UI ✅
 │   │   │   ├── compare-form.tsx
 │   │   │   ├── results-list.tsx
@@ -209,6 +225,8 @@ wassalha/
 │   │   ├── booking/                   # Booking sheet ✅
 │   │   │   ├── booking-sheet.tsx
 │   │   │   └── booking-form.tsx
+│   │   ├── forms/                     # Shared form components ✅
+│   │   │   └── address-autocomplete.tsx
 │   │   ├── shipments/                 # Shipments table ✅
 │   │   │   ├── shipments-table.tsx
 │   │   │   └── status-badge.tsx       # Color-coded status badge ✅
@@ -238,21 +256,29 @@ wassalha/
 │   │   │   └── client.ts              # Supabase client (Realtime) ✅
 │   │   ├── notifications/
 │   │   │   ├── email.ts               # Resend confirmation email ✅
-│   │   │   └── whatsapp.ts            # WhatsApp Business API ✅
+│   │   │   └── whatsapp.ts            # WhatsApp Business API (Phase 7) ✅
+│   │   ├── utils/
+│   │   │   └── clerk-webhook.ts       # Clerk user sync handler ✅
+│   │   ├── utils.ts                   # Shared utility functions ✅
 │   │   └── validations/
 │   │       ├── carriers.ts            # Carrier + compare Zod schemas ✅
 │   │       └── shipments.ts           # BookingInput + response schemas ✅
-│   └── hooks/
-│       ├── use-carriers.ts            # TanStack Query carrier hooks ✅
-│       ├── use-compare.ts             # Comparison mutation hook ✅
-│       ├── use-create-shipment.ts     # Booking mutation hook ✅
-│       ├── use-shipments.ts           # Shipments query hook ✅
-│       ├── use-shipment-status.ts     # Realtime + 10s polling status hook ✅
-│       └── use-tracking-events.ts     # Realtime INSERT events hook ✅
+│   ├── hooks/
+│   │   ├── use-carriers.ts            # TanStack Query carrier hooks ✅
+│   │   ├── use-compare.ts             # Comparison mutation hook ✅
+│   │   ├── use-create-shipment.ts     # Booking mutation hook ✅
+│   │   ├── use-shipments.ts           # Shipments query hook ✅
+│   │   ├── use-shipment-status.ts     # Realtime + 10s polling status hook ✅
+│   │   └── use-tracking-events.ts     # Realtime INSERT events hook ✅
+│   ├── middleware.ts                  # Clerk auth — protects /dashboard, /admin ✅
+│   └── test-setup.ts                  # Vitest + @testing-library/jest-dom setup
 ├── docs/plans/                        # Implementation plans + progress
+├── docs/mds/                          # Strategic docs (charter, stakeholder register)
 ├── drizzle.config.ts
+├── vitest.config.ts
 ├── next.config.ts
 ├── tsconfig.json
+├── components.json                    # shadcn/ui config
 ├── .env.example
 ├── .github/workflows/ci.yml           # lint + tsc + vitest + build
 ├── package.json
@@ -368,23 +394,17 @@ pnpm dev                    # Start Next.js dev server (port 3000)
 pnpm build                  # Production build
 pnpm start                  # Start production server
 pnpm lint                   # ESLint check
-pnpm lint:fix               # Auto-fix lint issues
-pnpm format                 # Prettier format
-pnpm typecheck              # TypeScript type checking
+pnpm typecheck              # TypeScript type checking (tsc --noEmit)
 
 # Database
 pnpm db:generate            # Generate Drizzle migration from schema changes
 pnpm db:migrate             # Apply pending migrations
-pnpm db:push                # Push schema directly (dev only, NOT for production)
 pnpm db:studio              # Open Drizzle Studio GUI
 pnpm db:seed                # Seed carriers + test data
 
 # Testing
-pnpm test                   # Run Vitest unit tests
-pnpm test:watch             # Watch mode
-pnpm test:coverage          # Coverage report
-pnpm test:e2e               # Playwright E2E tests
-pnpm test:e2e:ui            # Playwright with UI
+pnpm test                   # Run Vitest (watch mode)
+pnpm test:run               # Run Vitest once (CI mode)
 
 # Docker
 docker-compose up -d db     # Start PostgreSQL only
@@ -399,11 +419,13 @@ docker-compose down         # Stop all
 ### Full-Stack — Next.js 15 App Router
 
 ```
+middleware.ts       → Clerk auth — protects /dashboard and /admin routes
 app/                → Pages (RSC by default, client where needed)
 app/api/            → REST API routes (thin controllers → services)
 lib/services/       → Business logic (comparison, booking, tracking)
 lib/db/schema/      → Drizzle ORM table definitions
 lib/carriers/       → Unified carrier adapter pattern
+lib/supabase/       → Supabase client (Realtime subscriptions)
 lib/validations/    → Zod schemas (shared API + form validation)
 components/         → Reusable React components (shadcn/ui based)
 hooks/              → Custom hooks (TanStack Query, Supabase subscriptions)

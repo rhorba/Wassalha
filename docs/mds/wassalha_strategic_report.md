@@ -536,32 +536,34 @@ Benchmark against logistics SaaS globally and adjust for Moroccan market dynamic
 
 ### 4.1 Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| Frontend | Next.js 15 (App Router) + TypeScript + Tailwind CSS 4 + shadcn/ui |
-| Backend | Node.js + Hono (lightweight API) or Next.js API routes |
-| Database | PostgreSQL (Supabase or Neon) + Drizzle ORM |
-| Auth | Clerk or NextAuth.js v5 |
-| Real-time | Supabase Realtime or Socket.io for tracking |
-| Maps | Google Maps API or Mapbox for address input + route visualization |
-| Payments | Stripe for commission billing (+ CMI for local Moroccan cards) |
-| Deployment | Vercel (frontend) + Railway or Fly.io (backend services) |
-| CI/CD | GitHub Actions |
-| Monitoring | Sentry + PostHog (analytics) |
-| Carrier integrations | REST APIs per carrier (Amana, CTM Express, etc.) — abstracted behind a unified adapter pattern |
+| Component | Technology | Status |
+|-----------|------------|--------|
+| Frontend | Next.js 15 (App Router) + TypeScript + Tailwind CSS 4 + shadcn/ui | ✅ Live |
+| Backend | Next.js API Routes (TypeScript) — 14 route files | ✅ Live |
+| Database | PostgreSQL via Supabase + Drizzle ORM (5 migrations) | ✅ Live |
+| Auth | Clerk (hosted UI + publicMetadata role + JWT template) | ✅ Live |
+| Real-time | Supabase Realtime + 10s polling fallback | ✅ Live (W5) |
+| Maps | Google Maps API (address autocomplete, Morocco-restricted) | ✅ Live |
+| Payments | Stripe (commission billing invoices) | ⏳ W6 |
+| Email | Resend (booking confirmation) | ✅ Live (W4) |
+| Notifications | WhatsApp Business API | ⏳ W7 |
+| Deployment | Vercel (frontend) + Railway / Fly.io (services) | ⏳ W8 |
+| CI/CD | GitHub Actions (lint + tsc + vitest + build) | ✅ Live |
+| Monitoring | Sentry + PostHog (analytics) | ⏳ W8 |
+| Carrier integrations | Unified adapter pattern — Aramex (full), 4 stubs | ✅ Live (W4–W5) |
 
 ### 4.2 Sprint Breakdown
 
-| Week | Sprint Goal | Key Tasks | Tech Stack | Deliverable |
-|------|------------|-----------|------------|-------------|
-| **W1** | Foundation + Auth | Project scaffolding (Next.js 15 + TS + Tailwind 4), DB schema design (users, carriers, shipments, commissions), Auth flow (signup/login/roles), CI/CD pipeline setup | Next.js 15, Drizzle, PostgreSQL, Clerk, GitHub Actions | Auth working, DB migrated, CI/CD live |
-| **W2** | Address + Carrier Data | Address input with autocomplete (Google Maps API), Carrier database seeding (5+ carriers: pricing, zones, SLAs), Admin panel: manage carrier data, Unified carrier adapter interface | Google Maps API, Drizzle, shadcn/ui | Address input + carrier CRUD working |
-| **W3** | Comparison Engine | Ranking algorithm (cost, speed, reliability weights), Comparison API endpoint, Comparison results UI (ranked cards with badges), Filter/sort controls | Hono/Next API, algorithm logic, Tailwind | User inputs origin/dest → sees ranked carriers |
-| **W4** | Booking + Commission | One-click booking flow, Shipment record creation, Commission calculation engine, Booking confirmation UI + email notification | Supabase, Resend (email), Stripe | Full booking flow end-to-end |
-| **W5** | Real-time Tracking | Carrier tracking API integrations (webhooks/polling), Unified tracking data model, Live tracking dashboard UI, Push notifications (status changes) | Supabase Realtime, webhooks, Mapbox | Live tracking dashboard working |
-| **W6** | Dashboard + Analytics | Retailer dashboard: shipments, spend, savings, Commission/billing dashboard for Wassalha, Charts: delivery success rate, cost trends, Export to CSV | Recharts, PostHog, Drizzle queries | Full analytics dashboard live |
-| **W7** | Landing Page + Onboarding | Marketing landing page (all copywriting applied), Onboarding wizard (3-step setup), Help center / FAQ, WhatsApp integration for notifications | Next.js, Tailwind, Framer Motion, WhatsApp Business API | Landing page live, onboarding flow complete |
-| **W8** | Testing + Launch Prep | End-to-end testing (Playwright), Performance optimization (Core Web Vitals), Security audit (OWASP basics), Beta launch to 20 retailers, Feedback collection + iteration | Playwright, Lighthouse, Sentry | Beta live with 20 users, feedback loop active |
+| Week | Sprint Goal | Key Tasks | Tech Stack | Deliverable | Status |
+|------|------------|-----------|------------|-------------|--------|
+| **W1** | Foundation + Auth | Project scaffolding (Next.js 15 + TS + Tailwind 4), DB schema design (users, carriers, shipments, commissions), Auth flow (signup/login/roles), CI/CD pipeline setup | Next.js 15, Drizzle, PostgreSQL, Clerk, GitHub Actions | Auth working, DB migrated, CI/CD live | ✅ Done |
+| **W2** | Address + Carrier Data | Address input with autocomplete (Google Maps API), Carrier database seeding (5 carriers: pricing, zones, SLAs), Admin panel: manage carrier data, Unified carrier adapter interface | Google Maps API, Drizzle, shadcn/ui | Address input + carrier CRUD working | ✅ Done |
+| **W3** | Comparison Engine | Ranking algorithm (cost, speed, reliability weights), Comparison API endpoint, Comparison results UI (ranked cards with badges), Filter/sort controls | Next.js API Routes, algorithm logic, Tailwind | User inputs origin/dest → sees ranked carriers | ✅ Done |
+| **W4** | Booking + Commission | One-click booking flow, Shipment record creation, Commission calculation engine, Booking confirmation UI + Resend email | Drizzle transactions, Resend, carrier adapters | Full booking flow end-to-end — 99 tests | ✅ Done |
+| **W5** | Real-time Tracking | Carrier tracking API integrations (Aramex full + 4 stubs), Unified tracking model, Live stepper UI, cron poller, Supabase Realtime + polling fallback | Supabase Realtime, cron route, Drizzle | Live tracking dashboard working — 107 tests | ✅ Done |
+| **W6** | Dashboard + Analytics | Retailer dashboard: shipments, spend, savings, Commission/billing dashboard, Charts: delivery success rate, cost trends, Export to CSV | Recharts, PostHog, Drizzle queries | Full analytics dashboard live | ⏳ Planned |
+| **W7** | Landing Page + Onboarding | Marketing landing page (all copywriting applied), Onboarding wizard (3-step setup), Help center / FAQ, WhatsApp integration for notifications | Next.js, Tailwind, Framer Motion, WhatsApp Business API | Landing page live, onboarding flow complete | ⏳ Planned |
+| **W8** | Testing + Launch Prep | End-to-end testing (Playwright), Performance optimization (Core Web Vitals), Security audit (OWASP basics), Beta launch to 20 retailers, Feedback collection + iteration | Playwright, Lighthouse, Sentry | Beta live with 20 users, feedback loop active | ⏳ Planned |
 
 ### 4.3 Sprint Backlog in French
 
