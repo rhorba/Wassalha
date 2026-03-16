@@ -338,8 +338,8 @@ GET    /api/analytics               Retailer analytics (Phase 6)
 | `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` | ✅ Now | Post sign-in redirect (e.g. `/dashboard`) |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | ✅ Now | Post sign-up redirect (e.g. `/dashboard`) |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | ✅ Now | Google Maps API key (address autocomplete) |
-| `RESEND_API_KEY` | W4+ | Resend email API key — booking confirmation emails |
-| `RESEND_FROM_EMAIL` | W4+ | Sender address (use `onboarding@resend.dev` until domain verified) |
+| `RESEND_API_KEY` | ✅ W4 | Resend email API key — booking confirmation emails |
+| `RESEND_FROM_EMAIL` | ✅ W4 | Sender address (use `onboarding@resend.dev` until domain verified) |
 | `AMANA_API_URL` / `AMANA_API_KEY` / `AMANA_ACCOUNT_ID` | W4+ | Amana Maroc carrier credentials |
 | `ARAMEX_API_URL` / `ARAMEX_USERNAME` / `ARAMEX_PASSWORD` / `ARAMEX_ACCOUNT_NUMBER` / `ARAMEX_ACCOUNT_PIN` | W4+ | Aramex carrier credentials |
 | `CTM_API_URL` / `CTM_API_KEY` | W4+ | CTM Messagerie carrier credentials |
