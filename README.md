@@ -333,6 +333,10 @@ GET    /api/analytics               Retailer analytics (Phase 6)
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | ✅ Now | Clerk public key |
 | `CLERK_SECRET_KEY` | ✅ Now | Clerk secret key |
 | `CLERK_WEBHOOK_SECRET` | ✅ Now | Clerk webhook signing secret |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | ✅ Now | Clerk sign-in page path (e.g. `/sign-in`) |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | ✅ Now | Clerk sign-up page path (e.g. `/sign-up`) |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` | ✅ Now | Post sign-in redirect (e.g. `/dashboard`) |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | ✅ Now | Post sign-up redirect (e.g. `/dashboard`) |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | ✅ Now | Google Maps API key (address autocomplete) |
 | `RESEND_API_KEY` | W4+ | Resend email API key — booking confirmation emails |
 | `RESEND_FROM_EMAIL` | W4+ | Sender address (use `onboarding@resend.dev` until domain verified) |
