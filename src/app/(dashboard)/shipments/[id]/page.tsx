@@ -2,8 +2,8 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect, notFound } from "next/navigation";
 import { getShipmentById } from "@/lib/services/bookings";
 import { getTrackingEvents } from "@/lib/services/tracking";
+import { LiveStatusBadge } from "@/components/tracking/live-shipment-detail";
 import { TrackingTimeline } from "@/components/tracking/tracking-timeline";
-import { StatusBadge } from "@/components/shipments/status-badge";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -14,7 +14,7 @@ export default async function ShipmentDetailPage({ params }: Props) {
   if (!userId) redirect("/sign-in");
 
   const { id } = await params;
-  const role    = (sessionClaims?.publicMetadata as { role?: string })?.role === "admin"
+  const role = (sessionClaims?.publicMetadata as { role?: string })?.role === "admin"
     ? "admin"
     : "retailer";
 
@@ -31,7 +31,7 @@ export default async function ShipmentDetailPage({ params }: Props) {
           <h1 className="text-xl font-semibold">Shipment Details</h1>
           <p className="font-mono text-sm text-gray-500">{shipment.carrierTrackingNumber}</p>
         </div>
-        <StatusBadge status={shipment.status} />
+        <LiveStatusBadge shipmentId={shipment.id} initialStatus={shipment.status} />
       </div>
 
       {/* Shipment info */}

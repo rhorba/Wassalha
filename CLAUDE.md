@@ -18,7 +18,7 @@ Focus: Type-safety, performance, bilingual support (French/Darija), RBAC securit
 - **API Layer**: Next.js API Routes (TypeScript). Hono deferred — not in use.
 - **Database**: PostgreSQL (Neon cloud) + Drizzle ORM.
 - **Auth**: Clerk (hosted UI + publicMetadata role + JWT template). NextAuth dropped.
-- **Real-time**: Supabase Realtime (Phase 5 — not yet implemented).
+- **Real-time**: Supabase Realtime (Phase 5 — implemented). postgres_changes for tracking_events INSERT + polling fallback for shipments UPDATE.
 - **Maps**: Google Maps API (address autocomplete, Morocco-restricted) + Mapbox (Phase 5 route visualization).
 - **Payments**: Stripe (Phase 6 — commission billing invoices). Not yet integrated.
 - **Email**: Resend (Phase 4 — booking confirmation). Lazy-initialized, skipped if key missing.
@@ -65,9 +65,9 @@ Ranking algorithm (cost/speed/reliability with mode weights), `POST /api/carrier
 One-click booking (BookingSheet → carrier adapter → atomic DB transaction), shipment records, dual-rate commission engine (10% shipping + 1.5% COD), Resend confirmation email + WhatsApp recipient notification. **Complete. 99 tests passing.**
 
 
-### ⏳ Phase 5 — Real-time Tracking (Week 5)
+### ✅ Phase 5 — Real-time Tracking (Week 5)
 
-Carrier tracking integrations, unified tracking model, live dashboard, push notifications.
+Carrier tracking integrations (Aramex + 4 stubs), unified tracking model, live stepper + badge, cron poller (hourly), Supabase Realtime + polling fallback. **Complete. 107 tests passing. Test plan Parts 1–3 done. Part 4 (edge cases) in progress.**
 
 ### ⏳ Phase 6 — Dashboard + Analytics (Week 6)
 
@@ -96,7 +96,7 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 | Carrier Comparison Engine | ✅ | ✅ | Ranking: cost, speed, reliability — 99 tests |
 | One-click Booking | ✅ | ✅ | CarrierAdapter → atomic TX → Resend email + WhatsApp |
 | Commission Engine | ✅ | ✅ | Dual-rate: 10% shipping + 1.5% COD |
-| Real-time GPS Tracking | ⏳ | ⏳ | Supabase Realtime + Mapbox |
+| Real-time GPS Tracking | ✅ | ✅ | Supabase Realtime + 10s polling fallback. Mapbox deferred Phase 6. |
 | Retailer Dashboard | ⏳ | ⏳ | Shipments, spend, savings |
 | Analytics + Charts | ⏳ | ⏳ | Recharts, export CSV |
 | Marketing Landing Page | ⏳ | ⏳ | Full copywriting applied |
@@ -106,22 +106,22 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 
 ### 📊 Codebase Metrics
 
-**Current (Phase 4 complete):**
-- Drizzle schema: 6 tables live — users, carriers, carrier_zones, carrier_pricing, shipments, commissions
-- Migrations: 4 applied (0000–0003)
-- API routes: 10 endpoints live
-- React components: ~15 built
-- Tests: 99 passing
+**Current (Phase 5 complete):**
+- Drizzle schema: 7 tables live — users, carriers, carrier_zones, carrier_pricing, shipments, commissions, tracking_events
+- Migrations: 5 applied (0000–0004)
+- API routes: 12 endpoints live (+ cron/tracking + mock-aramex)
+- React components: ~20 built
+- Tests: 107 passing
 
-**Planned (Phases 5–8):**
-- Additional tables: tracking_events, notifications, audit_logs
+**Planned (Phases 6–8):**
+- Additional tables: notifications, audit_logs
 - No separate `bookings` table — booking data lives in `shipments`
 - Target API routes: ~15 total
 - Target components: ~25+
 
 ---
 
-### 📦 Project Structure (actual — Phase 4)
+### 📦 Project Structure (actual — Phase 5)
 
 ```
 wassalha/

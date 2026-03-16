@@ -1,6 +1,7 @@
 "use client";
 
 import { useTrackingEvents } from "@/hooks/use-tracking-events";
+import { useShipmentStatus } from "@/hooks/use-shipment-status";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import type { TrackingEvent, Shipment } from "@/lib/db/schema";
 
@@ -27,13 +28,14 @@ interface TrackingTimelineProps {
 
 export function TrackingTimeline({ shipment, initialEvents }: TrackingTimelineProps) {
   const events = useTrackingEvents(shipment.id, initialEvents);
+  const status = useShipmentStatus(shipment.id, shipment.status);
 
   const eventByStatus = new Map<string, TrackingEvent>();
   for (const e of events) {
     eventByStatus.set(e.status, e);
   }
 
-  const currentIndex = ORDERED_STATUSES.indexOf(shipment.status as Shipment["status"]);
+  const currentIndex = ORDERED_STATUSES.indexOf(status as Shipment["status"]);
 
   return (
     <div className="flex flex-col gap-0">

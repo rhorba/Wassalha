@@ -1,7 +1,7 @@
 # Execution Progress
 
 **Plan:** `docs/plans/2026-03-15-phase-5-tracking/plan.md`
-**Last updated:** 2026-03-15
+**Last updated:** 2026-03-16
 
 ## Status
 
@@ -67,8 +67,21 @@
 - **city-zones.json slug mismatch**: Mapped old slugs — updated all cities to use `aramex`, `marocolis`, `sendex`
 - **Realtime payload camelCase bug**: `useTrackingEvents` hook cast `payload.new` directly to `TrackingEvent` — Supabase Realtime returns snake_case, causing `occurredAt` to be undefined → "Invalid Date". Fixed by manually mapping snake_case fields in the hook.
 
-### Part 3 — Aramex Sandbox Integration Test ⏳
-- Deferred to next session. Requires Aramex sandbox credentials from developer.aramex.com.
+### Part 3 — Aramex Sandbox Integration Test ✅ (simulated) — 2026-03-16
+
+- developer.aramex.com was down — simulation used instead of real sandbox credentials.
+- Created mock Aramex API at `src/app/api/mock-aramex/` (two routes: create + track).
+- Set `ARAMEX_API_URL=http://localhost:3000/api/mock-aramex` in `.env.local` with dummy credentials.
+- ✅ 3.2: Booked shipment via UI → got tracking number `ARX-MOCK-1773621061006`
+- ✅ 3.3: Triggered cron → `{ ok: true, processed: 1, errors: 0 }`
+- ✅ 3.4: `tracking_events` table has 3 rows (SH001→in_transit, SH005→picked_up, SH010→in_transit) with correct locations + descriptions
+- ✅ 3.5: `shipments.status` updated to `in_transit` by cron after polling
+- ✅ 3.6: Live badge update confirmed — updated mock to add SH006 (delivered), triggered cron, badge flipped without refresh
+- ✅ 3.7: Status code reference table verified against STATUS_MAP in adapter
+
+**Bugs found & fixed during Part 3:**
+- `__mock__` folder name: Next.js App Router ignores folders starting with `_` — renamed to `mock-aramex`
+- Supabase Realtime UPDATE not firing: `postgres_changes` filter requires RLS or server-side support. Root cause: `CHANNEL_ERROR mismatch between server and client bindings` when filter removed; silent no-events when filter kept. Fixed by adding **10s polling fallback** to `useShipmentStatus` alongside the Realtime subscription. DB confirmed: `REPLICA IDENTITY FULL` set on both tables, both in `supabase_realtime` publication, all roles have SELECT — Realtime infra correct but subscription unreliable for UPDATE events.
 
 ### Part 4 — Edge Cases ⏳
 - Deferred to next session.
