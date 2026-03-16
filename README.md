@@ -545,6 +545,53 @@ New carriers are added by implementing this interface — zero changes to core l
 
 ---
 
+## Test Coverage — Skipped & Deferred Scenarios
+
+Complete audit of all manual smoke tests across Phases 1–6. To be resolved after Phase 8.
+
+### Phase 1 — Manual smoke tests never formally logged
+
+Passed in practice (project progressed through all phases), but no checkbox record exists in progress.md.
+Return after Phase 8 to formally sign off.
+
+| # | Test | Section |
+|---|------|---------|
+| M1–M5 | Landing page renders: heading, tagline, CTA buttons, no console errors | 3.1 |
+| A1–A5 | Sign-up: Clerk UI → email verify → redirect to `/dashboard` → DB row created with `role=retailer` | 3.2 |
+| B1–B5 | Sign-in + sign-out: UserButton visible, redirect after sign-out, `/dashboard` blocked | 3.3 |
+| P1–P5 | Route protection: unauthenticated `/dashboard` → 302, retailer `/admin` → 302 | 3.4 |
+| W1–W6 | Webhook: missing headers → 400, invalid sig → 400, `user.created/updated/deleted` syncs DB | 3.5 |
+| U1–U4 | shadcn/ui: Button styles, UserButton avatar, Tailwind 4 CSS vars, `components.json` config | 3.6 |
+
+### Phase 2 — ✅ Fully logged
+All 7 E2E manual checks passed and recorded (seed, public API, admin CRUD, RBAC, validation errors, address autocomplete).
+
+### Phase 3 — No manual smoke tests defined
+Verification was typecheck + lint + build only.
+
+### Phase 4 — No manual smoke tests defined
+Automated unit + integration tests only.
+
+### Phase 5 — ✅ Fully logged
+Parts 1–4 complete: 107 tests + smoke tests + all 7 edge cases ✅.
+
+### Phase 6 — 2 skipped
+
+| # | Scenario | Reason | Prerequisite to unblock |
+|---|----------|--------|------------------------|
+| S10 | "Générer facture" button disabled when retailer has 0 MAD pending | No such retailer in DB at time of testing | Create a retailer with no pending commissions |
+| S11 | Generate Stripe invoice → toast + row disappears + appears in invoice history | `STRIPE_SECRET_KEY` was placeholder only | Add real `sk_test_...` key from Stripe dashboard |
+
+### Resolution plan
+
+After Phase 8 wrap-up, run a dedicated deferred-test session in this order:
+
+1. **P6 S11** — Add real Stripe test key → generate invoice → verify toast + commission status change + Stripe dashboard
+2. **P6 S10** — Create a retailer with no pending commissions → verify button is disabled with tooltip
+3. **P1 Section 3** — Walk through M1–M5, A1–A5, B1–B5, P1–P5, W1–W6, U1–U4 and formally log each checkbox in `docs/plans/2026-03-12-phase-1-foundation/progress.md`
+
+---
+
 ## License
 
 MIT License
