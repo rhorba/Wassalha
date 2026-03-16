@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const UserProfileSchema = z.object({
   businessName:         z.string().min(1, "Business name required").max(100),
-  phone:                z.string().regex(/^\+?[0-9]{9,15}$/, "Enter a valid phone number"),
+  phone:                z.string().transform(v => v.replace(/\s+/g, "")).pipe(z.string().regex(/^\+?[0-9]{9,15}$/, "Enter a valid phone number")),
   defaultSenderAddress: z.string().min(5, "Address too short").max(300),
   defaultSenderCity:    z.string().min(2, "City required"),
 });

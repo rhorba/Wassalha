@@ -10,7 +10,7 @@ import { useUpdateUserProfile } from "@/hooks/use-user-profile";
 
 const schema = z.object({
   businessName: z.string().min(1, "Nom requis").max(100),
-  phone:        z.string().regex(/^\+?[0-9]{9,15}$/, "Numéro invalide"),
+  phone:        z.string().transform(v => v.replace(/\s+/g, "")).pipe(z.string().regex(/^\+?[0-9]{9,15}$/, "Numéro invalide")),
 });
 type FormData = z.infer<typeof schema>;
 

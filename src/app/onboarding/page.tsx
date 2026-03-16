@@ -12,12 +12,14 @@ export default function OnboardingPage() {
   const router            = useRouter();
   const { data: profile } = useUserProfile();
 
-  // Redirect already-onboarded users
+  // Redirect already-onboarded users — only on initial load (step 1)
+  // If step > 1, user is actively going through the wizard; don't interrupt
   useEffect(() => {
-    if (profile?.businessName) {
+    if (step !== 1) return;
+    if (profile?.businessName && profile?.defaultSenderCity) {
       router.replace("/dashboard");
     }
-  }, [profile, router]);
+  }, [profile, router, step]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4 py-12">
