@@ -78,9 +78,9 @@ Role-aware KPI dashboard (6 retailer cards + 3 admin pipeline cards), Recharts a
 - `kpi-row.tsx` — showed `0` instead of `—` for new retailers with no shipments (fixed: null when `totalShipments === 0`)
 - `GET /api/billing/invoices` — `StripeAuthenticationError` not caught → 500 + TanStack Query retry storm (fixed: catch Stripe auth errors + `retry: false`)
 
-### ⏳ Phase 7 — Landing Page + Onboarding (Week 7)
+### ✅ Phase 7 — Landing Page + Onboarding (Week 7)
 
-Marketing landing page, onboarding wizard, help center, WhatsApp integration.
+Marketing landing page (Hero in Darija + French, FAQ accordion, CTA), 3-step onboarding wizard (`/onboarding`), user profile API (`GET/PATCH /api/users/me`), compare form pre-fill from saved city, WhatsApp already wired. **Complete. 157 tests passing.**
 
 ### ⏳ Phase 8 — Testing + Launch (Week 8)
 
@@ -105,18 +105,19 @@ E2E testing, performance optimization, security audit, beta launch to 20 retaile
 | Retailer Dashboard | ✅ | ✅ | KPI row (6 cards) + recent shipments |
 | Analytics + Charts | ✅ | ✅ | Recharts tabbed panel, DateRangePicker, CSV export |
 | Commission Billing | ✅ | ✅ | Stripe invoices — admin generates per-retailer invoices, webhook marks paid |
-| Marketing Landing Page | ⏳ | ⏳ | Full copywriting applied |
-| Onboarding Wizard | ⏳ | ⏳ | 3-step setup |
-| WhatsApp Notifications | ⏳ | ⏳ | WhatsApp Business API |
+| Marketing Landing Page | ✅ | ✅ | Hero (Darija + French), value props, FAQ accordion, CTA footer |
+| Onboarding Wizard | ✅ | ✅ | 3-step: business profile → default address → done. Clerk redirect. |
+| WhatsApp Notifications | ✅ | ✅ | Wired in bookings.ts (Phase 4). Meta Graph API, skips if no credentials. |
 | Beta Launch (20 retailers) | ⏳ | ⏳ | Feedback loop active |
 
 ### 📊 Codebase Metrics
 
-**Current (Phase 6 complete):**
-- Drizzle schema: 7 tables live — users (+stripeCustomerId), carriers, carrier_zones, carrier_pricing, shipments, commissions (+stripeInvoiceId), tracking_events
-- Migrations: 6 applied (0000–0005)
-- API routes: 21 route files live (carriers CRUD×7, compare, shipments×3, commissions/export, analytics×2, billing/invoices, cron/tracking, mock-aramex×2, webhooks/clerk, webhooks/stripe)
-- React components: 32 built (16 shadcn/ui primitives + 16 feature components)
+**Current (Phase 7 complete):**
+- Drizzle schema: 7 tables live — users (+stripeCustomerId +businessName +phone +defaultSenderAddress +defaultSenderCity), carriers, carrier_zones, carrier_pricing, shipments, commissions (+stripeInvoiceId), tracking_events
+- Migrations: 7 applied (0000–0006)
+- API routes: 22 route files live (carriers CRUD×7, compare, shipments×3, commissions/export, analytics×2, billing/invoices, cron/tracking, mock-aramex×2, webhooks/clerk, webhooks/stripe, users/me)
+- React components: 36 built (16 shadcn/ui primitives + 20 feature components incl. 4 onboarding steps + landing page)
+- Tests: 157 passing
 - Services: 6 (carriers, comparison, bookings, commission, tracking, analytics, billing)
 - Hooks: 9 TanStack Query hooks
 - Tests: 146 passing

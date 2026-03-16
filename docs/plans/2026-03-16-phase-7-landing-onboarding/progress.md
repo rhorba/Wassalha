@@ -13,8 +13,8 @@
 | 4 | `useUserProfile` TanStack Query hook | ✅ completed |
 | 5 | Onboarding wizard (4 files + env) | ✅ completed |
 | 6 | Pre-fill compare form with default origin city | ✅ completed |
-| 7 | Add shadcn Accordion + landing page | ⏳ pending |
-| 8 | Verify + commit | ⏳ pending |
+| 7 | Add shadcn Accordion + landing page | ✅ completed |
+| 8 | Verify + commit | ✅ completed |
 
 ## Batch Log
 
@@ -31,6 +31,17 @@
 - ✅ Task 6: Updated `compare-form.tsx` to accept `defaultOriginCity` prop with `useEffect` pre-fill. Updated `compare-page-client.tsx` to pass `profile?.defaultSenderCity`.
 - Verification: build ✅ (34 routes, `/onboarding` visible as static route)
 
-## Resume Instructions
-To continue: run `/executing-plans` and reference this progress file.
-Next batch starts at Task 7.
+### Batch 3 (Tasks 7–8) — 2026-03-16
+- ✅ Task 7: Accordion already existed; rewrote `src/app/page.tsx` with full marketing page — Navbar, Hero (Darija + French), ValueProps (3 cards), HowItWorks (3 steps), CarrierStrip, FAQ Accordion (5 items), CTA Footer.
+- ✅ Task 8: `pnpm lint` ✅, `pnpm build` ✅ (34 routes), `pnpm test` ✅ (157 passing). Committed all Phase 7 changes + 11 new tests.
+- Verification: lint ✅ build ✅ tests 157/157 ✅
+
+## Test Results — 2026-03-16
+- Unit tests (validation): 8 passed (UserProfileSchema + UserProfilePatchSchema)
+- Unit tests (service): 3 passed (getUserProfile + updateUserProfile)
+- All existing tests: 146 still passing
+- Total: 157 passed, 0 failed
+- All tests passing: ✅
+
+## Status: COMPLETE ✅
+All 8 tasks done. Phase 7 fully implemented.
