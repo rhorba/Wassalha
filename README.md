@@ -24,7 +24,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | W4 | Booking + Commission | ✅ Done | Full booking flow end-to-end — 99 tests passing |
 | W5 | Real-time Tracking | ✅ Done | Live tracking stepper + badge — 107 tests passing |
 | W6 | Dashboard + Analytics | ✅ Done | KPI dashboard + charts + Stripe billing — 146 tests passing |
-| W7 | Landing Page + Onboarding | ⏳ Planned | Landing page live, onboarding flow complete |
+| W7 | Landing Page + Onboarding | ✅ Done | Landing page (Darija + French) + 3-step onboarding + user profile API — 157 tests passing |
 | W8 | Testing + Launch Prep | ⏳ Planned | Beta live with 20 users, feedback loop active |
 
 ### Feature Status
@@ -49,9 +49,9 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | Retailer dashboard (KPIs, spend, success rate) | ✅ | ✅ | **W6** |
 | Commission/billing dashboard (Stripe invoices) | ✅ | ✅ | **W6** |
 | Charts + CSV export (Recharts, streaming CSV) | ✅ | ✅ | **W6** |
-| Marketing landing page | — | ⏳ | **W7** |
-| Onboarding wizard (3-step) | — | ⏳ | **W7** |
-| WhatsApp notification integration | ⏳ | — | **W7** |
+| Marketing landing page | ✅ | ✅ | **W7** |
+| Onboarding wizard (3-step) | ✅ | ✅ | **W7** |
+| WhatsApp notification integration | ✅ | — | **W7** |
 | E2E testing (Playwright) | ⏳ | ⏳ | **W8** |
 | Performance optimization (Core Web Vitals) | — | ⏳ | **W8** |
 | Security audit (OWASP basics) | ⏳ | — | **W8** |
@@ -182,7 +182,7 @@ wassalha/
 │   │   │   ├── dashboard/page.tsx     # Dashboard home
 │   │   │   ├── compare/               # Carrier comparison ✅
 │   │   │   │   ├── page.tsx
-│   │   │   │   └── compare-page-client.tsx
+│   │   │   │   └── compare-page-client.tsx  # Pre-fills originCity from user profile
 │   │   │   ├── shipments/             # Shipments ✅
 │   │   │   │   ├── page.tsx           # Shipments list
 │   │   │   │   └── [id]/page.tsx      # Shipment detail + live tracking
@@ -190,6 +190,11 @@ wassalha/
 │   │   │       ├── page.tsx           # Carrier list
 │   │   │       ├── new/page.tsx       # Create carrier
 │   │   │       └── [id]/page.tsx      # Edit carrier
+│   │   ├── onboarding/                # 3-step onboarding wizard ✅
+│   │   │   ├── page.tsx               # Step orchestrator (already-onboarded redirect)
+│   │   │   ├── step-business.tsx      # Step 1: business name + phone
+│   │   │   ├── step-address.tsx       # Step 2: default sender address + city
+│   │   │   └── step-done.tsx          # Step 3: success + CTA → /compare
 │   │   ├── api/                       # Next.js API Routes
 │   │   │   ├── carriers/              # Carrier CRUD + comparison ✅
 │   │   │   │   ├── route.ts           # GET list, POST create
@@ -214,11 +219,12 @@ wassalha/
 │   │   │   ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
 │   │   │   │   ├── v1/shipping/shipments/create/route.ts
 │   │   │   │   └── v1/tracking/shipments/track/route.ts
+│   │   │   ├── users/me/route.ts      # GET + PATCH user profile ✅
 │   │   │   └── webhooks/
 │   │   │       ├── clerk/route.ts     # Clerk user sync ✅
 │   │   │       └── stripe/route.ts    # Stripe invoice.paid → mark commissions paid ✅
 │   │   ├── layout.tsx                 # Root layout (ClerkProvider + QueryProvider)
-│   │   ├── page.tsx                   # Landing page (placeholder)
+│   │   ├── page.tsx                   # Marketing landing page ✅
 │   │   └── providers.tsx              # TanStack Query + Clerk providers
 │   ├── components/
 │   │   ├── ui/                        # shadcn/ui primitives (16 components) ✅
@@ -261,7 +267,7 @@ wassalha/
 │   │   │   ├── schema/                # users, carriers, carrier_zones,
 │   │   │   │                          # carrier_pricing, shipments, commissions,
 │   │   │   │                          # tracking_events ✅
-│   │   │   ├── migrations/            # 0000–0005 applied ✅
+│   │   │   ├── migrations/            # 0000–0006 applied ✅
 │   │   │   ├── seed.ts                # 5 carriers seeded ✅
 │   │   │   └── index.ts               # Drizzle + pg Pool client
 │   │   ├── carriers/
@@ -276,7 +282,8 @@ wassalha/
 │   │   │   ├── commission.ts          # calculateCommission (dual-rate) ✅
 │   │   │   ├── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
 │   │   │   ├── analytics.ts           # getAnalyticsSummary, getAnalyticsCharts ✅
-│   │   │   └── billing.ts             # getRetailersBillingOverview, createRetailerInvoice ✅
+│   │   │   ├── billing.ts             # getRetailersBillingOverview, createRetailerInvoice ✅
+│   │   │   └── users.ts               # getUserProfile, updateUserProfile ✅
 │   │   ├── supabase/
 │   │   │   └── client.ts              # Supabase client (Realtime) ✅
 │   │   ├── notifications/
@@ -287,7 +294,8 @@ wassalha/
 │   │   ├── utils.ts                   # Shared utility functions ✅
 │   │   └── validations/
 │   │       ├── carriers.ts            # Carrier + compare Zod schemas ✅
-│   │       └── shipments.ts           # BookingInput + response schemas ✅
+│   │       ├── shipments.ts           # BookingInput + response schemas ✅
+│   │       └── users.ts               # UserProfileSchema + UserProfilePatchSchema ✅
 │   ├── hooks/
 │   │   ├── use-carriers.ts            # TanStack Query carrier hooks ✅
 │   │   ├── use-compare.ts             # Comparison mutation hook ✅
@@ -297,7 +305,8 @@ wassalha/
 │   │   ├── use-tracking-events.ts     # Realtime INSERT events hook ✅
 │   │   ├── use-analytics-summary.ts   # KPI cards query hook ✅
 │   │   ├── use-analytics-charts.ts    # Chart data query hook ✅
-│   │   └── use-billing.ts             # Invoice list + create mutation hook ✅
+│   │   ├── use-billing.ts             # Invoice list + create mutation hook ✅
+│   │   └── use-user-profile.ts        # Profile query + update mutation hook ✅
 │   ├── middleware.ts                  # Clerk auth — protects /dashboard, /analytics, /admin ✅
 │   └── test-setup.ts                  # Vitest + @testing-library/jest-dom setup
 ├── docs/plans/                        # Implementation plans + progress
@@ -319,7 +328,13 @@ wassalha/
 
 ## API Endpoints
 
-### Live (Phase 1–5)
+### Live (Phase 1–7)
+
+#### User Profile (Phase 7)
+```
+GET    /api/users/me                Get current user's profile (business name, phone, default address)
+PATCH  /api/users/me                Update profile — partial, Zod-validated, Clerk-authed
+```
 
 #### Carriers
 ```
@@ -374,9 +389,9 @@ GET    /api/billing/invoices        List Stripe invoices with status (admin only
 POST   /api/webhooks/stripe         Stripe webhook — invoice.paid → marks commissions paid
 ```
 
-### Planned (Phase 7+)
+### Planned (Phase 8+)
 ```
-POST   /api/notifications/whatsapp  WhatsApp recipient notification (Phase 7)
+(No planned API additions — Phase 8 is testing + launch)
 ```
 
 ---
@@ -385,14 +400,14 @@ POST   /api/notifications/whatsapp  WhatsApp recipient notification (Phase 7)
 
 | Table | Status | Description |
 |-------|:------:|-------------|
-| `users` | ✅ Live | Retailer accounts synced from Clerk via webhook |
+| `users` | ✅ Live | Retailer accounts synced from Clerk. Phase 7: +`business_name`, `phone`, `default_sender_address`, `default_sender_city` |
 | `carriers` | ✅ Live | 5 carriers seeded (Amana, Aramex, CTM, Marocolis, Sendex) |
 | `carrier_zones` | ✅ Live | Coverage zones per carrier |
 | `carrier_pricing` | ✅ Live | Pricing tiers per zone (stored in centimes) |
 | `shipments` | ✅ Live | Shipment records — status, recipient, tracking number, COD amount |
 | `commissions` | ✅ Live | Per-shipment commission (10% shipping + 1.5% COD) — `stripeInvoiceId` added W6 |
 | `tracking_events` | ✅ Live | Status change history per shipment — upsert keyed on (shipment_id, occurred_at, carrier_raw_status) |
-| `notifications` | ⏳ W7 | WhatsApp/email notification log |
+| `notifications` | ⏳ W8 | WhatsApp/email notification log |
 | `audit_logs` | ⏳ W8 | System audit trail |
 
 ---
@@ -408,7 +423,7 @@ POST   /api/notifications/whatsapp  WhatsApp recipient notification (Phase 7)
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | ✅ Now | Clerk sign-in page path (e.g. `/sign-in`) |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | ✅ Now | Clerk sign-up page path (e.g. `/sign-up`) |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` | ✅ Now | Post sign-in redirect (e.g. `/dashboard`) |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | ✅ Now | Post sign-up redirect (e.g. `/dashboard`) |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | ✅ Now | Post sign-up redirect — set to `/onboarding` (Phase 7+) |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | ✅ Now | Google Maps API key (address autocomplete) |
 | `RESEND_API_KEY` | ✅ W4 | Resend email API key — booking confirmation emails |
 | `RESEND_FROM_EMAIL` | ✅ W4 | Sender address (use `onboarding@resend.dev` until domain verified) |
@@ -574,6 +589,19 @@ Automated unit + integration tests only.
 
 ### Phase 5 — ✅ Fully logged
 Parts 1–4 complete: 107 tests + smoke tests + all 7 edge cases ✅.
+
+### Phase 7 — Smoke tests pending (S1–S10)
+
+Manual verification of the onboarding wizard, landing page, and user profile API. Run against `pnpm dev`.
+See full checklist: `docs/plans/2026-03-16-phase-7-landing-onboarding/test-plan.md`.
+
+| # | Scenario | Status |
+|---|----------|--------|
+| S1–S4 | Onboarding wizard — full 3-step flow | ⏳ pending |
+| S5 | Already-onboarded redirect | ⏳ pending |
+| S6 | Compare form origin city pre-fill | ⏳ pending |
+| S7–S8 | Landing page + FAQ accordion | ⏳ pending |
+| S9–S10 | API auth + validation errors | ⏳ pending |
 
 ### Phase 6 — 2 skipped
 
