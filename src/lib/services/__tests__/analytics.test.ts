@@ -11,26 +11,6 @@ vi.mock("@/lib/db", () => ({
 import { getAnalyticsSummary, getAnalyticsCharts } from "../analytics";
 import { db } from "@/lib/db";
 
-// Helper to build a chainable select mock that resolves with a given value
-function mockSelect(returnValue: unknown[]) {
-  const chain = {
-    from:      vi.fn(),
-    where:     vi.fn(),
-    leftJoin:  vi.fn(),
-    groupBy:   vi.fn(),
-    then:      undefined as unknown,
-  };
-  // Make every method return the chain so we can call .from().where() etc.
-  chain.from     = vi.fn().mockReturnValue(chain);
-  chain.where    = vi.fn().mockReturnValue(chain);
-  chain.leftJoin = vi.fn().mockReturnValue(chain);
-  chain.groupBy  = vi.fn().mockReturnValue(chain);
-  // Make the chain itself thenable (a Promise-like)
-  Object.assign(chain, Promise.resolve(returnValue));
-  (chain as unknown as Promise<unknown[]>)[Symbol.iterator as never] =
-    returnValue[Symbol.iterator as never];
-  return chain;
-}
 
 describe("getAnalyticsSummary", () => {
   beforeEach(() => vi.clearAllMocks());

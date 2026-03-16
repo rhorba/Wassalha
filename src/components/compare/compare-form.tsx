@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,12 @@ import { CityAutocomplete } from "@/components/compare/city-autocomplete";
 import { CompareInputSchema, type CompareInput } from "@/lib/validations/carriers";
 
 interface CompareFormProps {
-  onSubmit: (data: CompareInput) => void;
-  isLoading: boolean;
+  onSubmit:          (data: CompareInput) => void;
+  isLoading:         boolean;
+  defaultOriginCity?: string;
 }
 
-export function CompareForm({ onSubmit, isLoading }: CompareFormProps) {
+export function CompareForm({ onSubmit, isLoading, defaultOriginCity }: CompareFormProps) {
   // Track displayed city names separately so we can show them under the input
   const [originLabel, setOriginLabel] = useState("");
   const [destLabel, setDestLabel] = useState("");
@@ -30,6 +31,14 @@ export function CompareForm({ onSubmit, isLoading }: CompareFormProps) {
     resolver: zodResolver(CompareInputSchema),
     defaultValues: { mode: "balanced", codAmountMad: 0 },
   });
+
+  // Pre-fill origin city from user's saved default
+  useEffect(() => {
+    if (defaultOriginCity) {
+      setValue("originCity", defaultOriginCity, { shouldValidate: false });
+      setOriginLabel(defaultOriginCity);
+    }
+  }, [defaultOriginCity, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

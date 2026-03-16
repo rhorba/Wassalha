@@ -4,18 +4,21 @@ import { useState } from "react";
 import { CompareForm } from "@/components/compare/compare-form";
 import { ResultsList } from "@/components/compare/results-list";
 import { useCompare } from "@/hooks/use-compare";
+import { useUserProfile } from "@/hooks/use-user-profile";
 import type { CarrierResult, CompareInput } from "@/lib/validations/carriers";
 
 export function ComparePageClient() {
   const [results, setResults]           = useState<CarrierResult[] | null>(null);
   const [cityNotFound, setCityNotFound] = useState(false);
   const [lastInput, setLastInput]       = useState<CompareInput | null>(null);
-  const compare = useCompare();
+  const compare                         = useCompare();
+  const { data: profile }               = useUserProfile();
 
   return (
     <div className="space-y-8">
       <CompareForm
         isLoading={compare.isPending}
+        defaultOriginCity={profile?.defaultSenderCity ?? undefined}
         onSubmit={(data) => {
           setCityNotFound(false);
           setLastInput(data);
