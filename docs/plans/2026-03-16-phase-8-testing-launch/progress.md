@@ -19,8 +19,8 @@
 | 10 | Sentry setup | ✅ completed |
 | 11 | PostHog setup | ✅ completed |
 | 12 | Feedback widget — schema + migration | ✅ completed |
-| 13 | Feedback API route + Zod validation | ⏳ pending |
-| 14 | Feedback widget component + dashboard placement | ⏳ pending |
+| 13 | Feedback API route + Zod validation | ✅ completed |
+| 14 | Feedback widget component + dashboard placement | ✅ completed |
 
 ## Batch Log
 
@@ -48,6 +48,17 @@
 - ✅ Task 12: Created `src/lib/db/schema/feedback.ts` (uuid PK, userId, message, page, createdAt). Exported from `schema/index.ts`. Generated + applied migration `0007_fair_captain_britain.sql`.
 - Verification: typecheck ✅ lint ✅ tests 157/157 ✅
 
-## Resume Instructions
-To continue: run `/executing-plans` and reference this progress file.
-Next batch starts at Task 13.
+### Batch 5 (Tasks 13–14) — 2026-03-17
+- ✅ Task 13: Created `src/app/api/feedback/route.ts` — POST handler with Clerk auth guard + Zod validation (message 10–500 chars, page required) + Drizzle insert + 201 response.
+- ✅ Task 14: Added `shadcn form.tsx` component (was missing). Created `src/components/feedback/feedback-button.tsx` — fixed-bottom-right Popover with React Hook Form + Zod + useMutation → POST /api/feedback → sonner toast. Added `<FeedbackButton />` to dashboard layout.tsx.
+- Verification: typecheck ✅ lint ✅ build ✅ (35 routes, 27 static pages)
+
+## Test Results — 2026-03-17
+- Unit tests (rate-limit): 3 passed
+- Unit tests (feedback route): 5 passed
+- All existing tests: 157 still passing
+- Total: **164 passed**, 0 failed (28 test files)
+- All tests passing: ✅
+
+## Status: COMPLETE ✅
+164 tests passing. All 14 tasks implemented. Phase 8 committed to main.
