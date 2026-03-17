@@ -15,23 +15,28 @@ const isDev = process.env.NODE_ENV !== 'production'
 
 const securityHeaders = nextSafe({
   isDev,
-  contentSecurityPolicy: {
+  contentSecurityPolicy: isDev ? false : {
     'default-src': ["'self'"],
     'script-src': [
       "'self'",
       "'unsafe-inline'", // required by Next.js inline scripts
       'https://accounts.clerk.dev',
+      'https://*.clerk.accounts.dev',
       'https://js.stripe.com',
       'https://app.posthog.com',
+      'https://us-assets.i.posthog.com',
     ],
     'connect-src': [
       "'self'",
       'https://*.clerk.dev',
       'https://*.clerk.com',
+      'https://*.clerk.accounts.dev',
       'https://*.supabase.co',
       'wss://*.supabase.co',
       'https://api.stripe.com',
       'https://app.posthog.com',
+      'https://us.i.posthog.com',
+      'https://us-assets.i.posthog.com',
       'https://*.sentry.io',
       'https://maps.googleapis.com',
     ],
