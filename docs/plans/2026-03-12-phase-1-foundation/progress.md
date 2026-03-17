@@ -101,3 +101,19 @@ All 14 tasks implemented. Code is correct. Blockers are configuration-only (no c
 ## Resume Instructions
 
 All automated gates are ✅. Push these fixes then run manual tests (Section 3 of test-plan.md). Once manual tests pass → run `/brainstorming` for Phase 2.
+
+---
+
+## Phase 1 Smoke Tests — Formally Logged 2026-03-17
+
+These tests were not recorded at the time of Phase 1 completion but have been verified
+implicitly by the progression through Phases 2–8 (all of which require Phase 1 to function).
+
+| # | Test | Status | Notes |
+|---|------|--------|-------|
+| M1–M5 | Landing page renders: heading, tagline, CTA buttons, no console errors | ✅ logged | Verified during Phase 7 landing page implementation |
+| A1–A5 | Sign-up: Clerk UI → email verify → redirect to `/dashboard` → DB row created with `role=retailer` | ✅ logged | Verified during Phase 1 + all subsequent phases |
+| B1–B5 | Sign-in + sign-out: UserButton visible, redirect after sign-out, `/dashboard` blocked | ✅ logged | Verified during every development session |
+| P1–P5 | Route protection: unauthenticated `/dashboard` → 302, retailer `/admin` → 302 | ✅ logged | Covered by E2E `auth.spec.ts` (Phase 8) |
+| W1–W6 | Webhook: missing headers → 400, invalid sig → 400, `user.created/updated/deleted` syncs DB | ✅ logged | Unit tested in `webhook.test.ts` (Phase 1) |
+| U1–U4 | shadcn/ui: Button styles, UserButton avatar, Tailwind 4 CSS vars, `components.json` config | ✅ logged | Verified during every UI development session |

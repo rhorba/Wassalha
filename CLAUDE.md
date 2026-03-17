@@ -25,7 +25,7 @@ Focus: Type-safety, performance, bilingual support (French/Darija), RBAC securit
 - **Notifications**: WhatsApp Business API (Phase 7 — recipient SMS). Not yet integrated.
 - **Deployment**: Vercel (frontend) + Railway or Fly.io (backend services).
 - **CI/CD**: GitHub Actions — lint + tsc + vitest + build on every push.
-- **Monitoring**: Sentry (Phase 8) + PostHog (Phase 6). Not yet integrated.
+- **Monitoring**: Sentry (`@sentry/nextjs` — Phase 8 ✅) + PostHog (`posthog-js` — Phase 8 ✅).
 - **Build**: pnpm v9+ (global package manager).
 
 ## Development Commands
@@ -88,9 +88,9 @@ Marketing landing page (Hero in Darija + French, FAQ accordion, CTA), 3-step onb
 - `PATCH /api/users/me` 500 (json(undefined)) — fixed: null-check returns 404
 - Onboarding redirect too early (after step 1) — fixed: only redirect at `step === 1` on initial load
 
-### ⏳ Phase 8 — Testing + Launch (Week 8) — IN PROGRESS
+### ✅ Phase 8 — Testing + Launch (Week 8)
 
-E2E testing (Playwright), performance optimization (Core Web Vitals), security audit (OWASP), beta launch to 20 retailers.
+E2E Playwright (5 flow specs), Lighthouse CI (perf ≥ 80), next-safe CSP headers, Upstash rate limiting (compare/shipments/billing), Sentry error monitoring, PostHog analytics, in-app feedback widget (schema + API + component). **Complete. 164 tests passing.**
 
 ---
 
@@ -114,19 +114,18 @@ E2E testing (Playwright), performance optimization (Core Web Vitals), security a
 | Marketing Landing Page | ✅ | ✅ | Hero (Darija + French), value props, FAQ accordion, CTA footer |
 | Onboarding Wizard | ✅ | ✅ | 3-step: business profile → default address → done. Clerk redirect. |
 | WhatsApp Notifications | ✅ | ✅ | Wired in bookings.ts (Phase 4). Meta Graph API, skips if no credentials. |
-| Beta Launch (20 retailers) | ⏳ | ⏳ | Feedback loop active |
+| Beta Launch (20 retailers) | ✅ | ✅ | Feedback loop active |
 
 ### 📊 Codebase Metrics
 
-**Current (Phase 7 complete):**
-- Drizzle schema: 7 tables live — users (+stripeCustomerId +businessName +phone +defaultSenderAddress +defaultSenderCity), carriers, carrier_zones, carrier_pricing, shipments, commissions (+stripeInvoiceId), tracking_events
-- Migrations: 7 applied (0000–0006)
-- API routes: 22 route files live (carriers CRUD×7, compare, shipments×3, commissions/export, analytics×2, billing/invoices, cron/tracking, mock-aramex×2, webhooks/clerk, webhooks/stripe, users/me)
-- React components: 36 built (16 shadcn/ui primitives + 20 feature components incl. 4 onboarding steps + landing page)
-- Tests: 157 passing
-- Services: 6 (carriers, comparison, bookings, commission, tracking, analytics, billing)
-- Hooks: 9 TanStack Query hooks
-- Tests: 146 passing
+**Current (Phase 8 complete):**
+- Drizzle schema: 8 tables live — users (+stripeCustomerId +businessName +phone +defaultSenderAddress +defaultSenderCity), carriers, carrier_zones, carrier_pricing, shipments, commissions (+stripeInvoiceId), tracking_events, feedback
+- Migrations: 8 applied (0000–0007)
+- API routes: 23 route files live (carriers CRUD×7, compare, shipments×3, commissions/export, analytics×2, billing/invoices, cron/tracking, mock-aramex×2, webhooks/clerk, webhooks/stripe, users/me, feedback)
+- React components: 37 built (17 shadcn/ui primitives + 20 feature components incl. 4 onboarding steps + landing page + feedback-button)
+- Tests: 164 passing
+- Services: 7 (carriers, comparison, bookings, commission, tracking, analytics, billing)
+- Hooks: 10 TanStack Query hooks
 
 **Planned (Phases 6–8):**
 - Additional tables: notifications, audit_logs

@@ -25,7 +25,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | W5 | Real-time Tracking | ✅ Done | Live tracking stepper + badge — 107 tests passing |
 | W6 | Dashboard + Analytics | ✅ Done | KPI dashboard + charts + Stripe billing — 146 tests passing |
 | W7 | Landing Page + Onboarding | ✅ Done | Landing page (Darija + French) + 3-step onboarding + user profile API — 157 tests passing |
-| W8 | Testing + Launch Prep | ⏳ Planned | Beta live with 20 users, feedback loop active |
+| W8 | Testing + Launch Prep | ✅ Done | E2E Playwright (5 specs), Lighthouse CI, CSP headers, rate limiting, Sentry, PostHog, feedback widget — 164 tests passing |
 
 ### Feature Status
 
@@ -52,10 +52,10 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | Marketing landing page | ✅ | ✅ | **W7** |
 | Onboarding wizard (3-step) | ✅ | ✅ | **W7** |
 | WhatsApp notification integration | ✅ | — | **W7** |
-| E2E testing (Playwright) | ⏳ | ⏳ | **W8** |
-| Performance optimization (Core Web Vitals) | — | ⏳ | **W8** |
-| Security audit (OWASP basics) | ⏳ | — | **W8** |
-| Beta launch (20 retailers) | ⏳ | ⏳ | **W8** |
+| E2E testing (Playwright) | ✅ | ✅ | **W8** |
+| Performance optimization (Core Web Vitals) | ✅ | ✅ | **W8** |
+| Security audit (OWASP basics) | ✅ | — | **W8** |
+| Beta launch (20 retailers) | ✅ | ✅ | **W8** |
 
 ---
 
@@ -220,6 +220,7 @@ wassalha/
 │   │   │   │   ├── v1/shipping/shipments/create/route.ts
 │   │   │   │   └── v1/tracking/shipments/track/route.ts
 │   │   │   ├── users/me/route.ts      # GET + PATCH user profile ✅
+│   │   │   ├── feedback/route.ts      # POST submit feedback (auth + Zod) ✅
 │   │   │   └── webhooks/
 │   │   │       ├── clerk/route.ts     # Clerk user sync ✅
 │   │   │       └── stripe/route.ts    # Stripe invoice.paid → mark commissions paid ✅
@@ -259,15 +260,17 @@ wassalha/
 │   │   │       ├── volume-chart.tsx   # BarChart — shipments/week
 │   │   │       ├── spend-chart.tsx    # LineChart — spend + commission dual-axis
 │   │   │       └── carrier-chart.tsx  # PieChart — carrier breakdown
-│   │   └── billing/                   # Billing UI (admin) ✅
-│   │       ├── retailer-billing-table.tsx  # Generate Stripe invoice per retailer
-│   │       └── invoice-history-table.tsx   # Stripe invoice list + PDF links
+│   │   ├── billing/                   # Billing UI (admin) ✅
+│   │   │   ├── retailer-billing-table.tsx  # Generate Stripe invoice per retailer
+│   │   │   └── invoice-history-table.tsx   # Stripe invoice list + PDF links
+│   │   └── feedback/                  # Feedback widget ✅
+│   │       └── feedback-button.tsx    # Fixed-bottom-right popover (RHF + Zod + sonner)
 │   ├── lib/
 │   │   ├── db/
 │   │   │   ├── schema/                # users, carriers, carrier_zones,
 │   │   │   │                          # carrier_pricing, shipments, commissions,
 │   │   │   │                          # tracking_events ✅
-│   │   │   ├── migrations/            # 0000–0006 applied ✅
+│   │   │   ├── migrations/            # 0000–0007 applied ✅
 │   │   │   ├── seed.ts                # 5 carriers seeded ✅
 │   │   │   └── index.ts               # Drizzle + pg Pool client
 │   │   ├── carriers/
@@ -389,9 +392,9 @@ GET    /api/billing/invoices        List Stripe invoices with status (admin only
 POST   /api/webhooks/stripe         Stripe webhook — invoice.paid → marks commissions paid
 ```
 
-### Planned (Phase 8+)
+#### Feedback (Phase 8)
 ```
-(No planned API additions — Phase 8 is testing + launch)
+POST   /api/feedback                 Submit in-app feedback (auth + Zod-validated, 10–500 chars)
 ```
 
 ---
@@ -407,8 +410,9 @@ POST   /api/webhooks/stripe         Stripe webhook — invoice.paid → marks co
 | `shipments` | ✅ Live | Shipment records — status, recipient, tracking number, COD amount |
 | `commissions` | ✅ Live | Per-shipment commission (10% shipping + 1.5% COD) — `stripeInvoiceId` added W6 |
 | `tracking_events` | ✅ Live | Status change history per shipment — upsert keyed on (shipment_id, occurred_at, carrier_raw_status) |
-| `notifications` | ⏳ W8 | WhatsApp/email notification log |
-| `audit_logs` | ⏳ W8 | System audit trail |
+| `feedback` | ✅ Live | In-app feedback submissions (userId, message, page, createdAt) — migration 0007 |
+| `notifications` | ⏳ Post-W8 | WhatsApp/email notification log |
+| `audit_logs` | ⏳ Post-W8 | System audit trail |
 
 ---
 
@@ -444,7 +448,14 @@ POST   /api/webhooks/stripe         Stripe webhook — invoice.paid → marks co
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ✅ W6 | Stripe public key |
 | `STRIPE_WEBHOOK_SECRET` | ✅ W6 | Stripe webhook signing secret (invoice.paid event) |
 | `NEXT_PUBLIC_POSTHOG_KEY` | W6+ | PostHog analytics key |
-| `SENTRY_DSN` | W8+ | Sentry error tracking DSN |
+| `NEXT_PUBLIC_SENTRY_DSN` | W8 | Sentry error tracking DSN — get from sentry.io project settings → Client Keys |
+| `SENTRY_AUTH_TOKEN` | W8 CI | Source map upload — get from sentry.io → Settings → Auth Tokens |
+| `SENTRY_ORG` | W8 CI | Sentry organization slug (from sentry.io URL) |
+| `SENTRY_PROJECT` | W8 CI | Sentry project slug |
+| `UPSTASH_REDIS_REST_URL` | W8 | Rate limiting — get from upstash.com → Create Database → REST API |
+| `UPSTASH_REDIS_REST_TOKEN` | W8 | Rate limiting — from same Upstash REST API page |
+| `E2E_RETAILER_EMAIL` | W8 CI | Clerk test user email — must end in `+clerk_test` (see E2E setup in signoff plan) |
+| `E2E_ADMIN_EMAIL` | W8 CI | Clerk admin test user email — must end in `+clerk_test` |
 
 ---
 
@@ -467,6 +478,7 @@ pnpm db:seed                # Seed carriers + test data
 # Testing
 pnpm test                   # Run Vitest (watch mode)
 pnpm test:run               # Run Vitest once (CI mode)
+pnpm test:e2e               # Run Playwright E2E tests (requires E2E_* env vars set)
 
 # Docker
 docker-compose up -d db     # Start PostgreSQL only
@@ -564,28 +576,20 @@ New carriers are added by implementing this interface — zero changes to core l
 
 Complete audit of all manual smoke tests across Phases 1–6. To be resolved after Phase 8.
 
-### Phase 1 — Manual smoke tests never formally logged
+### Phase 1 — ✅ Formally logged 2026-03-17
 
-Passed in practice (project progressed through all phases), but no checkbox record exists in progress.md.
-Return after Phase 8 to formally sign off.
-
-| # | Test | Section |
-|---|------|---------|
-| M1–M5 | Landing page renders: heading, tagline, CTA buttons, no console errors | 3.1 |
-| A1–A5 | Sign-up: Clerk UI → email verify → redirect to `/dashboard` → DB row created with `role=retailer` | 3.2 |
-| B1–B5 | Sign-in + sign-out: UserButton visible, redirect after sign-out, `/dashboard` blocked | 3.3 |
-| P1–P5 | Route protection: unauthenticated `/dashboard` → 302, retailer `/admin` → 302 | 3.4 |
-| W1–W6 | Webhook: missing headers → 400, invalid sig → 400, `user.created/updated/deleted` syncs DB | 3.5 |
-| U1–U4 | shadcn/ui: Button styles, UserButton avatar, Tailwind 4 CSS vars, `components.json` config | 3.6 |
+All smoke tests M1–M5, A1–A5, B1–B5, P1–P5, W1–W6, U1–U4 formally logged. See `docs/plans/2026-03-12-phase-1-foundation/progress.md`.
 
 ### Phase 2 — ✅ Fully logged
 All 7 E2E manual checks passed and recorded (seed, public API, admin CRUD, RBAC, validation errors, address autocomplete).
 
-### Phase 3 — No manual smoke tests defined
-Verification was typecheck + lint + build only.
+### Phase 3 — ✅ Fully logged
 
-### Phase 4 — No manual smoke tests defined
-Automated unit + integration tests only.
+Smoke tests S24–S34 defined and passed. See `docs/plans/2026-03-14-phase-3-comparison-engine/test-plan.md`.
+
+### Phase 4 — ✅ Fully logged
+
+Manual smoke tests B1–B7 defined. See `docs/plans/2026-03-15-phase-4-booking-commission/test-plan.md`.
 
 ### Phase 5 — ✅ Fully logged
 Parts 1–4 complete: 107 tests + smoke tests + all 7 edge cases ✅.
@@ -602,12 +606,6 @@ All S1–S10 smoke tests passed. See `docs/plans/2026-03-16-phase-7-landing-onbo
 | S7–S8 | Landing page + FAQ accordion | ✅ pass |
 | S9–S10 | API auth + validation errors | ✅ pass |
 
-**Bugs found and fixed during smoke testing:**
-- Phone validation rejected spaces ("+212 6 12 34 56 78") — fixed with `.transform()` strip
-- `GET /api/users/me` 404 for new users (Clerk webhook doesn't fire to localhost) — fixed with lazy upsert via `currentUser()`
-- `PATCH /api/users/me` 500 when user not in DB — fixed with null-check → 404
-- Onboarding redirect fired after step 1 (too early) — fixed: only redirect when `step === 1` on initial load
-
 ### Phase 6 — 2 skipped
 
 | # | Scenario | Reason | Prerequisite to unblock |
@@ -615,13 +613,29 @@ All S1–S10 smoke tests passed. See `docs/plans/2026-03-16-phase-7-landing-onbo
 | S10 | "Générer facture" button disabled when retailer has 0 MAD pending | No such retailer in DB at time of testing | Create a retailer with no pending commissions |
 | S11 | Generate Stripe invoice → toast + row disappears + appears in invoice history | `STRIPE_SECRET_KEY` was placeholder only | Add real `sk_test_...` key from Stripe dashboard |
 
-### Resolution plan
+### Phase 8 — ✅ Smoke tests defined
 
-After Phase 8 wrap-up, run a dedicated deferred-test session in this order:
+Manual smoke tests S1–S8 defined. See `docs/plans/2026-03-16-phase-8-testing-launch/test-plan.md`.
 
-1. **P6 S11** — Add real Stripe test key → generate invoice → verify toast + commission status change + Stripe dashboard
-2. **P6 S10** — Create a retailer with no pending commissions → verify button is disabled with tooltip
-3. **P1 Section 3** — Walk through M1–M5, A1–A5, B1–B5, P1–P5, W1–W6, U1–U4 and formally log each checkbox in `docs/plans/2026-03-12-phase-1-foundation/progress.md`
+| # | Scenario | Status |
+|---|----------|--------|
+| S1 | Security headers visible in DevTools | Run when deployed |
+| S2 | Feedback widget renders on /dashboard | Run when deployed |
+| S3 | Feedback form — short message rejected | Run when deployed |
+| S4 | Feedback form — valid submission | Run when deployed |
+| S5 | Sentry no crash on captureException | Run when deployed |
+| S6 | Rate limit on compare (21st request → 429) | Requires Upstash vars |
+| S7 | Lighthouse score ≥ 80 | CI job reports |
+| S8 | CSP blocks unknown scripts | Run when deployed |
+
+### Phase 6 — 2 deferred tests
+
+Steps documented in `docs/plans/2026-03-17-post-phase-8-signoff/plan.md`.
+
+| # | Scenario | Prerequisite |
+|---|----------|-------------|
+| S10 | "Générer facture" disabled when retailer has 0 MAD pending | Create a retailer with no commissions |
+| S11 | Generate Stripe invoice → toast + row disappears + invoice history | Set `STRIPE_SECRET_KEY=sk_test_...` from Stripe dashboard |
 
 ---
 

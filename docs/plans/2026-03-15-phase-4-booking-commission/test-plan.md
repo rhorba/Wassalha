@@ -47,3 +47,23 @@
 - admin role → no userId filter applied
 - page/pageSize offset calculated correctly
 
+---
+
+## Manual Smoke Tests — Phase 4
+
+Run against `pnpm dev` (localhost:3000). Mark ✅ pass or ❌ fail with notes.
+Prerequisite: at least one carrier seeded (`pnpm db:migrate` + seed data present).
+
+| # | Scenario | Steps | Expected |
+|---|----------|-------|----------|
+| B1 | Booking sheet opens | Sign in → `/compare` → run comparison → click "Réserver" on a card | BookingSheet slides in from right with carrier name pre-filled |
+| B2 | Booking form validation | Leave recipient name empty → click Submit | Inline error on required field. No network request. |
+| B3 | Complete booking | Fill all fields (name, phone: `+212600000000`, address, weight, COD 500 MAD) → Submit | Success state or toast. Shipment created. |
+| B4 | Shipment in dashboard | After B3, navigate to `/dashboard` | New shipment appears in recent shipments list |
+| B5 | Shipment detail page | Click on the shipment row | `/shipments/[id]` loads with status badge + tracking timeline |
+| B6 | Commission row created | After B3, open Drizzle Studio (`pnpm db:studio`) → commissions table | New row with shipping + COD commission amounts |
+| B7 | Booking without email key | Remove `RESEND_API_KEY` from `.env.local` → complete a booking | Booking succeeds silently — no crash, no email sent |
+
+> **B3 note:** With no real carrier API keys, the mock Aramex adapter is used. Set `ARAMEX_API_URL=http://localhost:3000/api/mock-aramex` in `.env.local`.
+> **B5 note:** Requires Phase 5 tracking setup (Supabase) — if not configured, tracking timeline shows empty state.
+

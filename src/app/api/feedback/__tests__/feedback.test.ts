@@ -19,7 +19,7 @@ const mockAuth = (userId: string | null) =>
 
 const mockInsert = () => {
   const values = vi.fn().mockResolvedValue(undefined)
-  vi.mocked(db.insert).mockReturnValue({ values } as ReturnType<typeof db.insert>)
+  vi.mocked(db.insert).mockReturnValue({ values } as unknown as ReturnType<typeof db.insert>)
   return values
 }
 
