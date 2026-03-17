@@ -1,6 +1,7 @@
 # Post-Phase-8 Signoff Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: use executing-plans skill to implement this plan task-by-task.
+> **Status: COMPLETE ✅ — All 9 tasks executed on 2026-03-17. See progress.md for full log.**
+> The remaining work is in progress.md → Manual Checklist (deploy + keys + smoke tests).
 
 **Goal:** Complete all deferred smoke tests, formally log Phase 1, define + run Phase 3/4/8 smoke tests, update all docs, and cut the final launch commit.
 
@@ -86,7 +87,7 @@ Run each scenario in a browser against `pnpm dev`. Mark each ✅ pass or ❌ fai
 | S2 | Feedback widget renders | Sign in → go to `/dashboard` | Fixed bottom-right button visible. Click → popover with form opens |
 | S3 | Feedback form — short message rejected | Type 5 chars → Submit | Inline validation error: "Must be at least 10 characters" |
 | S4 | Feedback form — valid submission | Type 20+ chars + page auto-filled → Submit | Success toast: "Feedback sent!" Popover closes |
-| S5 | Sentry integration active | In browser console: `Sentry.captureException(new Error("test"))` | No JS errors thrown. (In production: event appears in Sentry dashboard) |
+| S5 | Sentry active in production | Deploy to Vercel → open app → check sentry.io dashboard | Events appear. **Note:** Sentry is disabled in local dev (`enabled: false` when not `NODE_ENV=production`) — only testable after deploy. |
 | S6 | Rate limit on compare (manual) | Submit compare form 21× in quick succession | 21st request returns toast "Too many requests" or 429 in DevTools |
 | S7 | Lighthouse score (local) | Run `pnpm lhci autorun` locally (requires `pnpm start`) | Performance ≥ 80, LCP < 2500ms, CLS < 0.1 OR warnings in report |
 | S8 | CSP blocks unknown scripts | In browser console: `const s = document.createElement('script'); s.src='https://evil.example.com/x.js'; document.head.appendChild(s)` | CSP violation in console — script blocked |
@@ -129,7 +130,7 @@ Run each scenario in a browser against `pnpm dev`. Mark each ✅ pass or ❌ fai
 **Files:**
 - Update: `docs/plans/2026-03-17-post-phase-8-signoff/progress.md`
 
-Phase 3 had no manual smoke tests defined — only typecheck + lint + build verification. Run and log these now.
+**Note (added after execution):** Phase 3 already had smoke tests S24–S34 logged in `docs/plans/2026-03-14-phase-3-comparison-engine/test-plan.md` — this task was moot. The README was incorrect. Smoke tests below were defined for completeness but are already covered.
 
 | # | Scenario | Steps | Expected |
 |---|----------|-------|----------|
