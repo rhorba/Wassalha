@@ -17,10 +17,7 @@
 **Covers:** Unauthenticated request → 401.
 **Expected:** `auth()` returns no userId → early return 401.
 
-### T4: `feedback` Drizzle schema — types
-**File:** `src/lib/db/schema/__tests__/feedback.test.ts`
-**Covers:** `Feedback` and `NewFeedback` inferred types have correct shape.
-**Expected:** TypeScript types match schema columns.
+> **T4 removed:** Schema type correctness is fully covered by `pnpm typecheck` (TypeScript compile-time validation). A runtime Vitest test would duplicate what the compiler already guarantees — no test file needed.
 
 ---
 
@@ -34,7 +31,7 @@ Run against `pnpm dev` (localhost:3000). Mark ✅ pass or ❌ fail with notes.
 | S2 | Feedback widget renders | Sign in → `/dashboard` | Fixed bottom-right button visible. Click → popover with form opens |
 | S3 | Feedback form — short message rejected | Type 5 chars → Submit | Inline error: "Must be at least 10 characters" |
 | S4 | Feedback form — valid submission | Type 20+ chars → Submit | Toast "Feedback sent!" Popover closes |
-| S5 | Sentry no-crash | In browser console: `Sentry.captureException(new Error("test"))` | No JS errors thrown in browser |
+| S5 | Sentry active in production | Deploy to Vercel → open app → check sentry.io dashboard for events | Events appear. **Local dev only:** Sentry is disabled (`enabled: false` when not `NODE_ENV=production`) — test only after deploying. |
 | S6 | Rate limit on compare | Requires `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` set. Submit compare form 21× quickly | 21st request returns 429 toast "Too many requests" |
 | S7 | Lighthouse score | `pnpm build && pnpm start`, then `pnpm lhci autorun` | Performance ≥ 80, LCP < 2500ms, CLS < 0.1 (or warnings — not blocking) |
 | S8 | CSP blocks unknown scripts | Browser console: `const s=document.createElement('script');s.src='https://evil.example.com/x.js';document.head.appendChild(s)` | CSP violation logged in console — script does not load |
