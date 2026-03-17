@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createRetailerInvoice, listInvoices } from "@/lib/services/billing";
+import { ratelimit, checkRateLimit } from "@/lib/rate-limit";
 
 const CreateInvoiceSchema = z.object({ userId: z.string().min(1) });
 
@@ -11,6 +12,14 @@ export async function POST(req: Request) {
 
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const { limited, retryAfter } = await checkRateLimit(ratelimit.billing, userId);
+  if (limited) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } },
+    );
+  }
 
   const body   = await req.json() as unknown;
   const parsed = CreateInvoiceSchema.safeParse(body);

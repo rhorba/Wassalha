@@ -38,7 +38,7 @@ export function TrackingTimeline({ shipment, initialEvents }: TrackingTimelinePr
   const currentIndex = ORDERED_STATUSES.indexOf(status as Shipment["status"]);
 
   return (
-    <div className="flex flex-col gap-0">
+    <div data-testid="tracking-timeline" className="flex flex-col gap-0">
       {ORDERED_STATUSES.map((status, index) => {
         const isDone    = index < currentIndex || (index === currentIndex && status === "delivered");
         const isCurrent = index === currentIndex && status !== "delivered";

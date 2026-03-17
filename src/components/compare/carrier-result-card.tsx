@@ -29,7 +29,7 @@ export function CarrierResultCard({ result, isTop, compareInput }: CarrierResult
 
   return (
     <>
-      <Card className="relative">
+      <Card data-testid="carrier-result-card" className="relative">
         {isTop && (
           <Badge className="absolute top-3 right-3" variant="default">
             Best Match

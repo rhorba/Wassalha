@@ -2,10 +2,19 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { BookingInputSchema } from "@/lib/validations/shipments";
 import { createBooking, listShipments, CarrierApiError } from "@/lib/services/bookings";
+import { ratelimit, checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { limited, retryAfter } = await checkRateLimit(ratelimit.booking, userId);
+  if (limited) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } },
+    );
+  }
 
   const body: unknown = await req.json();
   const parsed = BookingInputSchema.safeParse(body);

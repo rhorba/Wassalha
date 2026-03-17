@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { FeedbackButton } from "@/components/feedback/feedback-button";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { sessionClaims } = await auth();
@@ -43,6 +44,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <UserButton />
       </header>
       <main className="px-6 py-8">{children}</main>
+      <FeedbackButton />
     </div>
   );
 }

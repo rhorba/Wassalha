@@ -41,7 +41,7 @@ export function ShipmentsTable() {
   }
 
   return (
-    <Table>
+    <Table data-testid="shipments-table">
       <TableHeader>
         <TableRow>
           <TableHead>Destinataire</TableHead>
@@ -54,7 +54,7 @@ export function ShipmentsTable() {
       </TableHeader>
       <TableBody>
         {data.shipments.map((s) => (
-          <TableRow key={s.id}>
+          <TableRow key={s.id} data-testid="shipment-row">
             <TableCell className="font-medium">{s.recipientName}</TableCell>
             <TableCell>{s.recipientCity}</TableCell>
             <TableCell className="font-mono text-xs">
