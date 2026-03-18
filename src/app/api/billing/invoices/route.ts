@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createRetailerInvoice, listInvoices } from "@/lib/services/billing";
 import { ratelimit, checkRateLimit } from "@/lib/rate-limit";
+import { logAuditEvent } from "@/lib/services/audit";
 
 const CreateInvoiceSchema = z.object({ userId: z.string().min(1) });
 
@@ -29,6 +30,15 @@ export async function POST(req: Request) {
 
   try {
     const result = await createRetailerInvoice(parsed.data.userId);
+
+    await logAuditEvent({
+      actorId:    userId,
+      actorRole:  "admin",
+      action:     "invoice.generate",
+      targetType: "invoice",
+      targetId:   parsed.data.userId,
+    });
+
     return NextResponse.json(result, { status: 201 });
   } catch (err) {
     if (err instanceof Error && err.message === "NO_PENDING_COMMISSIONS") {

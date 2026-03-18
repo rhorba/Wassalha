@@ -6,6 +6,7 @@ import {
   createCarrier,
   getCarrierBySlug,
 } from "@/lib/services/carriers";
+import { logAuditEvent } from "@/lib/services/audit";
 
 export async function GET() {
   try {
@@ -17,7 +18,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { sessionClaims } = await auth();
+  const { userId, sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
   if (role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -39,5 +40,14 @@ export async function POST(req: Request) {
   }
 
   const carrier = await createCarrier(parsed.data);
+
+  await logAuditEvent({
+    actorId:    userId ?? "unknown",
+    actorRole:  "admin",
+    action:     "carrier.create",
+    targetType: "carrier",
+    targetId:   carrier.id,
+  });
+
   return NextResponse.json(carrier, { status: 201 });
 }

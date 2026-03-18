@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { shipments, trackingEvents } from "@/lib/db/schema";
 import { getAdapter } from "@/lib/carriers/adapters";
 import type { TrackingEvent as AdapterEvent } from "@/lib/carriers/types";
+import { sendWebPushToUser } from "@/lib/notifications/web-push";
 
 const ACTIVE_STATUSES = ["confirmed", "picked_up", "in_transit"] as const;
 const MAX_AGE_DAYS    = 14;
@@ -19,6 +20,7 @@ async function getActiveShipments() {
     with: { carrier: true },
     columns: {
       id:                    true,
+      userId:                true,
       carrierTrackingNumber: true,
       status:                true,
     },
@@ -72,6 +74,11 @@ export async function pollActiveShipments(): Promise<{ processed: number; errors
           .update(shipments)
           .set({ status: next, updatedAt: new Date() })
           .where(eq(shipments.id, shipment.id));
+
+        void sendWebPushToUser(shipment.userId, shipment.id, {
+          title: "Colis mis à jour",
+          body:  `Votre envoi est maintenant : ${next.replace("_", " ")}`,
+        });
       }
     } catch (err) {
       console.error(`[tracking:poll] shipment=${shipment.id}`, err);

@@ -1,4 +1,6 @@
 import { Resend } from "resend";
+import { db } from "@/lib/db";
+import { notifications } from "@/lib/db/schema";
 import type { Shipment, Carrier } from "@/lib/db/schema";
 import type { CommissionBreakdown } from "@/lib/services/commission";
 
@@ -51,5 +53,16 @@ export async function sendBookingConfirmationEmail(
 
   if (error) {
     console.error("[email] Failed to send booking confirmation:", error);
+  }
+
+  // Log notification (fire-and-forget — never throws)
+  try {
+    await db.insert(notifications).values({
+      shipmentId: params.shipment.id,
+      channel:    "email",
+      status:     error ? "failed" : "sent",
+    });
+  } catch (logErr) {
+    console.error("[email] Failed to log notification:", logErr);
   }
 }

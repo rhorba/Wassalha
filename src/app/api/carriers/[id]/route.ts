@@ -7,6 +7,7 @@ import {
   softDeleteCarrier,
   getCarrierBySlug,
 } from "@/lib/services/carriers";
+import { logAuditEvent } from "@/lib/services/audit";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -21,7 +22,7 @@ export async function GET(_req: Request, { params }: Params) {
 
 export async function PUT(req: Request, { params }: Params) {
   const { id } = await params;
-  const { sessionClaims } = await auth();
+  const { userId, sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
   if (role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -50,12 +51,21 @@ export async function PUT(req: Request, { params }: Params) {
   }
 
   const updated = await updateCarrier(id, parsed.data);
+
+  await logAuditEvent({
+    actorId:    userId ?? "unknown",
+    actorRole:  "admin",
+    action:     "carrier.update",
+    targetType: "carrier",
+    targetId:   id,
+  });
+
   return NextResponse.json(updated);
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
   const { id } = await params;
-  const { sessionClaims } = await auth();
+  const { userId, sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
   if (role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -67,5 +77,14 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   const carrier = await softDeleteCarrier(id);
+
+  await logAuditEvent({
+    actorId:    userId ?? "unknown",
+    actorRole:  "admin",
+    action:     "carrier.delete",
+    targetType: "carrier",
+    targetId:   id,
+  });
+
   return NextResponse.json(carrier);
 }

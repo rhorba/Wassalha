@@ -100,6 +100,7 @@ export async function createBooking(
   });
 
   void sendRecipientWhatsApp({
+    shipmentId:         shipment.id,
     recipientPhone:     input.recipientPhone,
     recipientName:      input.recipientName,
     carrierName:        carrier.name,

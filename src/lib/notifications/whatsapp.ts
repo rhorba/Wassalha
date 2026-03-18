@@ -1,4 +1,8 @@
+import { db } from "@/lib/db";
+import { notifications } from "@/lib/db/schema";
+
 interface WhatsAppShipmentParams {
+  shipmentId:         string;
   recipientPhone:     string;
   recipientName:      string;
   carrierName:        string;
@@ -60,5 +64,16 @@ export async function sendRecipientWhatsApp(
   if (!res.ok) {
     const err = (await res.json()) as unknown;
     console.error("[whatsapp] Failed to send notification:", err);
+  }
+
+  // Log notification (fire-and-forget — never throws)
+  try {
+    await db.insert(notifications).values({
+      shipmentId: params.shipmentId,
+      channel:    "whatsapp",
+      status:     res.ok ? "sent" : "failed",
+    });
+  } catch (logErr) {
+    console.error("[whatsapp] Failed to log notification:", logErr);
   }
 }

@@ -5,6 +5,11 @@ vi.mock("@/lib/services/billing", () => ({
   createRetailerInvoice: vi.fn(),
   listInvoices:          vi.fn(),
 }));
+vi.mock("@/lib/services/audit", () => ({ logAuditEvent: vi.fn() }));
+vi.mock("@/lib/rate-limit", () => ({
+  ratelimit:      { billing: null, compare: null, booking: null },
+  checkRateLimit: vi.fn().mockResolvedValue({ limited: false, retryAfter: 0 }),
+}));
 
 import { auth } from "@clerk/nextjs/server";
 import * as billingService from "@/lib/services/billing";

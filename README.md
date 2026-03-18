@@ -26,6 +26,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | W6 | Dashboard + Analytics | ✅ Done | KPI dashboard + charts + Stripe billing — 146 tests passing |
 | W7 | Landing Page + Onboarding | ✅ Done | Landing page (Darija + French) + 3-step onboarding + user profile API — 157 tests passing |
 | W8 | Testing + Launch Prep | ✅ Done | E2E Playwright (5 specs), Lighthouse CI, CSP headers, rate limiting, Sentry, PostHog, feedback widget — 164 tests passing. Perf fix: root layout restructured — landing page now fully static. |
+| W9 | Notifications + Audit + Web Push | ✅ Done | notifications table, audit_logs table, push_subscriptions table (migration 0008), web-push service, bell toggle UI, audit-logs admin page, cron trigger — 178 tests passing. |
 
 ### Feature Status
 
@@ -45,7 +46,9 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | Booking confirmation + email | ✅ | ✅ | **W4** |
 | Carrier tracking API integrations | ✅ | — | **W5** |
 | Live tracking dashboard | — | ✅ | **W5** |
-| Push notifications (status changes) | ⏳ | ⏳ | **Post-W8** |
+| Web Push notifications (status changes) | ✅ | ✅ | **W9** |
+| Notifications log (email/WhatsApp/web_push per shipment) | ✅ | — | **W9** |
+| Audit trail (admin actions) | ✅ | ✅ | **W9** |
 | Retailer dashboard (KPIs, spend, success rate) | ✅ | ✅ | **W6** |
 | Commission/billing dashboard (Stripe invoices) | ✅ | ✅ | **W6** |
 | Charts + CSV export (Recharts, streaming CSV) | ✅ | ✅ | **W6** |
@@ -73,7 +76,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | **Maps** | Google Maps API (address autocomplete, Morocco-restricted) |
 | **Payments** | ⏳ Deferred — Stripe removed (not available in Morocco). PayGate Africa planned after vetting. Manual invoice confirmation used for beta. |
 | **Email** | Resend (booking confirmation — skipped if key missing) |
-| **Notifications** | WhatsApp Business API (wired, skips if credentials missing) |
+| **Notifications** | WhatsApp Business API (wired, skips if credentials missing) + Web Push API (W9 — VAPID, bell toggle) |
 | **Rate limiting** | Upstash Redis (`@upstash/ratelimit` — 20 req/min on compare) |
 | **Validation** | Zod (shared schemas for API + forms) |
 | **Forms** | React Hook Form + Zod resolver |
@@ -203,7 +206,9 @@ wassalha/
 │   │   │   │       │   ├── page.tsx
 │   │   │   │       │   ├── new/page.tsx
 │   │   │   │       │   └── [id]/page.tsx
-│   │   │   │       └── billing/       # Commission billing (admin only) ✅
+│   │   │   │       ├── billing/       # Commission billing (admin only) ✅
+│   │   │   │       │   └── page.tsx
+│   │   │   │       └── audit-logs/    # Audit trail (admin only) ✅ W9
 │   │   │   │           └── page.tsx
 │   │   │   └── onboarding/            # 3-step onboarding wizard ✅
 │   │   │       ├── page.tsx           # Step orchestrator (already-onboarded redirect)
@@ -230,6 +235,9 @@ wassalha/
 │   │       │   └── export/route.ts    # GET CSV download (admin) ✅
 │   │       ├── billing/
 │   │       │   └── invoices/route.ts  # POST create Stripe invoice, GET list (admin) ✅
+│   │       ├── push/                  # Web Push API ✅ W9
+│   │       │   ├── vapid-public-key/route.ts
+│   │       │   └── subscribe/route.ts
 │   │       ├── cron/tracking/route.ts # Tracking poller (daily on Vercel Hobby) ✅
 │   │       ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
 │   │       │   ├── v1/shipping/shipments/create/route.ts
@@ -275,14 +283,16 @@ wassalha/
 │   │   ├── billing/                   # Billing UI (admin) ✅
 │   │   │   ├── retailer-billing-table.tsx  # Generate Stripe invoice per retailer
 │   │   │   └── invoice-history-table.tsx   # Stripe invoice list + PDF links
+│   │   ├── notifications/             # Notification UI ✅ W9
+│   │   │   └── push-toggle.tsx        # Bell toggle (subscribe/unsubscribe web push)
 │   │   └── feedback/                  # Feedback widget ✅
 │   │       └── feedback-button.tsx    # Fixed-bottom-right popover (RHF + Zod + sonner)
 │   ├── lib/
 │   │   ├── db/
-│   │   │   ├── schema/                # users, carriers, carrier_zones,
-│   │   │   │                          # carrier_pricing, shipments, commissions,
-│   │   │   │                          # tracking_events ✅
-│   │   │   ├── migrations/            # 0000–0007 applied ✅
+│   │   │   ├── schema/                # users, carriers, carrier_zones, carrier_pricing,
+│   │   │   │                          # shipments, commissions, tracking_events, feedback,
+│   │   │   │                          # notifications, audit_logs, push_subscriptions ✅ W9
+│   │   │   ├── migrations/            # 0000–0008 applied ✅
 │   │   │   ├── seed.ts                # 5 carriers seeded ✅
 │   │   │   └── index.ts               # Drizzle + pg Pool client
 │   │   ├── carriers/
@@ -298,12 +308,14 @@ wassalha/
 │   │   │   ├── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
 │   │   │   ├── analytics.ts           # getAnalyticsSummary, getAnalyticsCharts ✅
 │   │   │   ├── billing.ts             # getRetailersBillingOverview, createRetailerInvoice ✅
-│   │   │   └── users.ts               # getUserProfile, updateUserProfile ✅
+│   │   │   ├── users.ts               # getUserProfile, updateUserProfile ✅
+│   │   │   └── audit.ts               # logAuditEvent (fire-and-forget) ✅ W9
 │   │   ├── supabase/
 │   │   │   └── client.ts              # Supabase client (Realtime) ✅
 │   │   ├── notifications/
 │   │   │   ├── email.ts               # Resend confirmation email ✅
-│   │   │   └── whatsapp.ts            # WhatsApp Business API (Phase 7) ✅
+│   │   │   ├── whatsapp.ts            # WhatsApp Business API ✅
+│   │   │   └── web-push.ts            # sendWebPushToUser — VAPID push, 410 cleanup ✅ W9
 │   │   ├── utils/
 │   │   │   └── clerk-webhook.ts       # Clerk user sync handler ✅
 │   │   ├── utils.ts                   # Shared utility functions ✅
@@ -321,9 +333,12 @@ wassalha/
 │   │   ├── use-analytics-summary.ts   # KPI cards query hook ✅
 │   │   ├── use-analytics-charts.ts    # Chart data query hook ✅
 │   │   ├── use-billing.ts             # Invoice list + create mutation hook ✅
-│   │   └── use-user-profile.ts        # Profile query + update mutation hook ✅
+│   │   ├── use-user-profile.ts        # Profile query + update mutation hook ✅
+│   │   └── use-web-push.ts            # Web Push subscribe/unsubscribe hook ✅ W9
 │   ├── middleware.ts                  # Clerk auth — protects /dashboard, /analytics, /admin ✅
 │   └── test-setup.ts                  # Vitest + @testing-library/jest-dom setup
+├── public/
+│   └── sw.js                          # Service worker — push events + notificationclick ✅ W9
 ├── docs/plans/                        # Implementation plans + progress
 ├── docs/mds/                          # Strategic docs (charter, stakeholder register)
 ├── e2e/                               # Playwright E2E specs (5 flow specs) ✅
@@ -412,6 +427,13 @@ POST   /api/webhooks/stripe         Stripe webhook — invoice.paid → marks co
 POST   /api/feedback                 Submit in-app feedback (auth + Zod-validated, 10–500 chars)
 ```
 
+#### Web Push (W9)
+```
+GET    /api/push/vapid-public-key    Return VAPID public key to browser (auth required, 503 if not configured)
+POST   /api/push/subscribe           Upsert push subscription (Zod-validated)
+DELETE /api/push/subscribe           Remove push subscription by endpoint
+```
+
 ---
 
 ## Database Schema
@@ -426,8 +448,9 @@ POST   /api/feedback                 Submit in-app feedback (auth + Zod-validate
 | `commissions` | ✅ Live | Per-shipment commission (10% shipping + 1.5% COD) — `stripeInvoiceId` added W6 |
 | `tracking_events` | ✅ Live | Status change history per shipment — upsert keyed on (shipment_id, occurred_at, carrier_raw_status) |
 | `feedback` | ✅ Live | In-app feedback submissions (userId, message, page, createdAt) — migration 0007 |
-| `notifications` | ⏳ Post-W8 | WhatsApp/email notification log |
-| `audit_logs` | ⏳ Post-W8 | System audit trail |
+| `notifications` | ✅ Live | Notification log — channel (email/whatsapp/web_push) + status per shipment — migration 0008 |
+| `audit_logs` | ✅ Live | Admin action audit trail (carrier CRUD, invoices, role changes) — migration 0008 |
+| `push_subscriptions` | ✅ Live | Browser VAPID push subscriptions per user — migration 0008 |
 
 ---
 
@@ -458,7 +481,10 @@ POST   /api/feedback                 Submit in-app feedback (auth + Zod-validate
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ W5 | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ W5 | Supabase service role key |
 | `CRON_SECRET` | ✅ W5 | Bearer token protecting `/api/cron/tracking` — generate with `openssl rand -hex 32` |
-| `NEXT_PUBLIC_MAPBOX_TOKEN` | W5+ | Mapbox access token (route visualization) |
+| `VAPID_PUBLIC_KEY` | ✅ W9 | VAPID public key — generate with `npx web-push generate-vapid-keys` |
+| `VAPID_PRIVATE_KEY` | ✅ W9 | VAPID private key |
+| `VAPID_SUBJECT` | ✅ W9 | VAPID subject — e.g. `mailto:admin@wassalha.ma` |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ✅ W9 | Same as `VAPID_PUBLIC_KEY`, exposed to browser |
 | `STRIPE_SECRET_KEY` | ⏳ Deferred | Stripe not supported in Morocco — migration to PayGate Africa planned |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ⏳ Deferred | Same as above |
 | `STRIPE_WEBHOOK_SECRET` | ⏳ Deferred | Same as above |
@@ -570,19 +596,6 @@ New carriers are added by implementing this interface — zero changes to core l
 
 ---
 
-## Risks & Mitigation
-
-| Risk | Probability | Impact | Mitigation |
-|------|:-----------:|:------:|------------|
-| Carrier API unavailability | High | High | Manual booking fallback; web scraping adapters as backup |
-| Low retailer adoption | Medium | High | Pre-launch WhatsApp outreach; free first 50 shipments |
-| Scope creep beyond MVP | High | Medium | Strict sprint scope; PM gatekeeps additions; defer to Phase 2 |
-| Carrier pricing changes | Medium | Medium | Automated sync where APIs exist; weekly manual audits |
-| Team bandwidth | Medium | High | Document decisions; pair programming; cross-train |
-| Regulatory requirements | Low | High | Early legal consultation on commission model |
-
----
-
 ## Success Criteria
 
 - MVP launched within 8 weeks with all core features functional
@@ -591,73 +604,6 @@ New carriers are added by implementing this interface — zero changes to core l
 - Retailers report average 20%+ cost savings vs. their previous setup
 - Net Promoter Score of 40+ from beta users
 - Positive unit economics: commission revenue covers per-shipment costs
-
----
-
-## Test Coverage — Skipped & Deferred Scenarios
-
-Complete audit of all manual smoke tests across Phases 1–6. To be resolved after Phase 8.
-
-### Phase 1 — ✅ Formally logged 2026-03-17
-
-All smoke tests M1–M5, A1–A5, B1–B5, P1–P5, W1–W6, U1–U4 formally logged. See `docs/plans/2026-03-12-phase-1-foundation/progress.md`.
-
-### Phase 2 — ✅ Fully logged
-All 7 E2E manual checks passed and recorded (seed, public API, admin CRUD, RBAC, validation errors, address autocomplete).
-
-### Phase 3 — ✅ Fully logged
-
-Smoke tests S24–S34 defined and passed. See `docs/plans/2026-03-14-phase-3-comparison-engine/test-plan.md`.
-
-### Phase 4 — ✅ Fully logged
-
-Manual smoke tests B1–B7 defined. See `docs/plans/2026-03-15-phase-4-booking-commission/test-plan.md`.
-
-### Phase 5 — ✅ Fully logged
-Parts 1–4 complete: 107 tests + smoke tests + all 7 edge cases ✅.
-
-### Phase 7 — ✅ Fully logged
-
-All S1–S10 smoke tests passed. See `docs/plans/2026-03-16-phase-7-landing-onboarding/test-plan.md`.
-
-| # | Scenario | Status |
-|---|----------|--------|
-| S1–S4 | Onboarding wizard — full 3-step flow | ✅ pass |
-| S5 | Already-onboarded redirect | ✅ pass |
-| S6 | Compare form origin city pre-fill | ✅ pass |
-| S7–S8 | Landing page + FAQ accordion | ✅ pass |
-| S9–S10 | API auth + validation errors | ✅ pass |
-
-### Phase 6 — 2 skipped
-
-| # | Scenario | Reason | Prerequisite to unblock |
-|---|----------|--------|------------------------|
-| S10 | "Générer facture" button disabled when retailer has 0 MAD pending | No such retailer in DB at time of testing | Create a retailer with no pending commissions |
-| S11 | Generate Stripe invoice → toast + row disappears + appears in invoice history | `STRIPE_SECRET_KEY` was placeholder only | Add real `sk_test_...` key from Stripe dashboard |
-
-### Phase 8 — ✅ Smoke tests defined
-
-Manual smoke tests S1–S8 defined. See `docs/plans/2026-03-16-phase-8-testing-launch/test-plan.md`.
-
-| # | Scenario | Status |
-|---|----------|--------|
-| S1 | Security headers visible in DevTools | Run when deployed |
-| S2 | Feedback widget renders on /dashboard | Run when deployed |
-| S3 | Feedback form — short message rejected | Run when deployed |
-| S4 | Feedback form — valid submission | Run when deployed |
-| S5 | Sentry no crash on captureException | Run when deployed |
-| S6 | Rate limit on compare (21st request → 429) | Requires Upstash vars |
-| S7 | Lighthouse score ≥ 80 | CI job reports |
-| S8 | CSP blocks unknown scripts | Run when deployed |
-
-### Phase 6 — 2 deferred tests
-
-Steps documented in `docs/plans/2026-03-17-post-phase-8-signoff/plan.md`.
-
-| # | Scenario | Prerequisite |
-|---|----------|-------------|
-| S10 | "Générer facture" disabled when retailer has 0 MAD pending | Create a retailer with no commissions |
-| S11 | Generate Stripe invoice → toast + row disappears + invoice history | Set `STRIPE_SECRET_KEY=sk_test_...` from Stripe dashboard |
 
 ---
 
@@ -725,47 +671,6 @@ WhatsApp booking confirmation (W4) and recipient notification (W7) are wired and
 **Code required:** None — already implemented in `src/lib/notifications/whatsapp.ts`. Just set `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` once Meta resolves the restriction.
 
 ---
-
-### Future Sprints — Requires Code Implementation
-
-These features are not yet started and require full implementation work.
-
-#### Push Notifications — Status Change Alerts
-
-**Status:** ⏳ Post-W8 — not implemented
-
-Real-time push notifications for shipment status changes are not implemented. WhatsApp booking notifications exist but only fire at booking time, not on status updates.
-
-**Options to evaluate:**
-- WhatsApp status update messages via existing `whatsapp.ts` (simplest — reuse current Meta integration, but blocked on Meta restriction above)
-- Browser Web Push API (no extra cost, works on desktop/Android)
-- FCM (Firebase Cloud Messaging) for mobile push
-
-**Code required:** Yes — new service, subscription management, frontend hooks, and `notifications` DB table (schema + migration + API).
-
-#### Mapbox Route Visualization
-
-**Status:** ⏳ Deferred — not yet implemented
-
-`NEXT_PUBLIC_MAPBOX_TOKEN` is in `.env.example` but Mapbox is not used anywhere in the codebase. The tracking timeline (`tracking-timeline.tsx`) shows a text stepper only.
-
-**Code required:** Yes — new `<MapboxRouteMap>` component + integration in `src/components/tracking/live-shipment-detail.tsx` and `src/app/(app)/(dashboard)/shipments/[id]/page.tsx`.
-
-#### `notifications` Table
-
-**Status:** ⏳ Post-W8 — not yet created
-
-A log of all WhatsApp/email notifications sent per shipment.
-
-**Code required:** Yes — Drizzle schema + migration + service layer updates in `bookings.ts` and `whatsapp.ts` to insert a row on each send.
-
-#### `audit_logs` Table
-
-**Status:** ⏳ Post-W8 — not yet created
-
-System audit trail for admin actions (carrier CRUD, invoice generation, role changes).
-
-**Code required:** Yes — Drizzle schema + migration + middleware or service-layer hooks to log events on write operations.
 
 ---
 

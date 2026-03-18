@@ -1,8 +1,7 @@
 ## Project Overview
 Wassalha — B2B COD Delivery Aggregator for Morocco.
-Monorepo architecture: Next.js 15 full-stack with dedicated API layer.
-Backend: Hono (lightweight API) + Next.js API Routes (TypeScript). Frontend: Next.js 15 App Router + React.
-Domain: Carrier comparison, one-click booking, real-time tracking, commission billing.
+Next.js 15 full-stack app (App Router). API: Next.js API Routes (TypeScript). Frontend: React 19 + shadcn/ui.
+Domain: Carrier comparison, one-click booking, real-time tracking, commission billing, push notifications.
 Focus: Type-safety, performance, bilingual support (French/Darija), RBAC security, mobile-first responsive.
 
 ## Rules
@@ -19,10 +18,10 @@ Focus: Type-safety, performance, bilingual support (French/Darija), RBAC securit
 - **Database**: PostgreSQL (Neon cloud) + Drizzle ORM.
 - **Auth**: Clerk (hosted UI + publicMetadata role + JWT template). NextAuth dropped.
 - **Real-time**: Supabase Realtime (Phase 5 — implemented). postgres_changes for tracking_events INSERT + polling fallback for shipments UPDATE.
-- **Maps**: Google Maps API (address autocomplete, Morocco-restricted) + Mapbox (Phase 5 route visualization).
-- **Payments**: ⏳ Deferred — Stripe removed (not available for Morocco merchants). PayGate Africa is the planned replacement but requires vetting (Morocco merchant support, REST API, webhook events, sandbox). Beta uses manual invoice confirmation. Do NOT implement payment processor until researched.
+- **Maps**: Google Maps API (address autocomplete, Morocco-restricted). Mapbox dropped — not needed.
+- **Payments**: ⏳ Deferred — Stripe removed (not available for Morocco merchants). PayGate Africa is the planned replacement but requires vetting. Beta uses manual invoice confirmation. Do NOT implement payment processor until researched.
 - **Email**: Resend (Phase 4 — booking confirmation). Lazy-initialized, skipped if key missing.
-- **Notifications**: WhatsApp Business API (Phase 7 — recipient SMS). Wired in `bookings.ts`, skips if credentials missing. ⏭ Skipped for beta — Meta account restricted from creating Business Portfolio (appeal submitted 2026-03-18). Revisit when Meta resolves restriction.
+- **Notifications**: WhatsApp Business API (wired in `bookings.ts`, skips if credentials missing. ⏭ Meta account restricted — appeal submitted 2026-03-18). Web Push (W9 ✅ — VAPID, `push_subscriptions` table, bell toggle in dashboard, triggered from cron poller on status change).
 - **Deployment**: Vercel (app — https://wassalha.vercel.app). Connected to `main` branch.
 - **CI/CD**: GitHub Actions — lint + tsc + vitest + build on every push.
 - **Monitoring**: Sentry (`@sentry/nextjs` — Phase 8 ✅) + PostHog (`posthog-js` — Phase 8 ✅). Both live in production.
@@ -94,7 +93,11 @@ Marketing landing page (Hero in Darija + French, FAQ accordion, CTA), 3-step onb
 
 E2E Playwright (5 flow specs), Lighthouse CI (perf ≥ 80), next-safe CSP headers, Upstash rate limiting (compare/shipments/billing), Sentry error monitoring, PostHog analytics, in-app feedback widget (schema + API + component). **Complete. 164 tests passing.**
 
-**Post-Phase-8 performance fix (2026-03-18):** Root cause — `ClerkProvider` + PostHog/TanStack providers loaded on every page including the static landing page, blocking LCP with cross-origin Clerk JS. Fix: stripped root layout to minimal HTML shell (`src/app/layout.tsx`); created `src/app/(app)/layout.tsx` with ClerkProvider + Providers + Toaster + SpeedInsights, wrapping only the `(app)` route group (auth/dashboard/onboarding). Landing page `/` now pre-renders as fully static (○) with no cross-origin blocking scripts. `lighthouserc.js` updated to test only `/` (removed `/dashboard` which redirects to Clerk-hosted sign-in — uncontrollable). All route groups (`(auth)/`, `(dashboard)/`, `onboarding/`) moved under `src/app/(app)/`.
+**Post-Phase-8 performance fix (2026-03-18):** Stripped root layout to minimal HTML shell; created `src/app/(app)/layout.tsx` wrapping only app routes. Landing page now fully static (○) with no cross-origin Clerk JS.
+
+### ✅ W9 — Notifications + Audit + Web Push (2026-03-18)
+
+`notifications` table (email/whatsapp/web_push log per shipment), `audit_logs` table (admin action trail: carrier CRUD, invoice generation, role changes), `push_subscriptions` table, Web Push service (VAPID), push API routes (`/api/push/subscribe`, `/api/push/vapid-public-key`), service worker (`public/sw.js`), `useWebPush` hook, `PushToggle` bell component in dashboard header, cron poller triggers push on status change. **Complete. 178 tests passing. Smoke tests S1–S10 deferred to next session (requires VAPID keys in .env.local).**
 
 ---
 
@@ -111,29 +114,33 @@ E2E Playwright (5 flow specs), Lighthouse CI (perf ≥ 80), next-safe CSP header
 | Carrier Comparison Engine | ✅ | ✅ | Ranking: cost, speed, reliability — 99 tests |
 | One-click Booking | ✅ | ✅ | CarrierAdapter → atomic TX → Resend email + WhatsApp |
 | Commission Engine | ✅ | ✅ | Dual-rate: 10% shipping + 1.5% COD |
-| Real-time GPS Tracking | ✅ | ✅ | Supabase Realtime + 10s polling fallback. Mapbox deferred Phase 7. |
+| Real-time GPS Tracking | ✅ | ✅ | Supabase Realtime + 10s polling fallback |
 | Retailer Dashboard | ✅ | ✅ | KPI row (6 cards) + recent shipments |
 | Analytics + Charts | ✅ | ✅ | Recharts tabbed panel, DateRangePicker, CSV export |
 | Commission Billing | ✅ | ✅ | Stripe invoices — admin generates per-retailer invoices, webhook marks paid |
 | Marketing Landing Page | ✅ | ✅ | Hero (Darija + French), value props, FAQ accordion, CTA footer |
 | Onboarding Wizard | ✅ | ✅ | 3-step: business profile → default address → done. Clerk redirect. |
-| WhatsApp Notifications | ✅ | ✅ | Wired in bookings.ts (Phase 4). Meta Graph API, skips if no credentials. |
+| WhatsApp Notifications | ✅ | — | Wired in bookings.ts. Meta Graph API, skips if no credentials. |
+| Web Push Notifications | ✅ | ✅ | W9 — VAPID, push_subscriptions, bell toggle, cron trigger |
+| Notifications Log | ✅ | — | W9 — notifications table, logs email/whatsapp/web_push per shipment |
+| Audit Trail | ✅ | ✅ | W9 — audit_logs table + /admin/audit-logs RSC page |
 | Beta Launch (20 retailers) | ✅ | ✅ | Feedback loop active |
 
 ### 📊 Codebase Metrics
 
-**Current (Phase 8 complete + perf fix applied):**
-- Drizzle schema: 8 tables live — users (+stripeCustomerId +businessName +phone +defaultSenderAddress +defaultSenderCity), carriers, carrier_zones, carrier_pricing, shipments, commissions (+stripeInvoiceId), tracking_events, feedback
-- Migrations: 8 applied (0000–0007)
-- API routes: 23 route files live (carriers CRUD×7, compare, shipments×3, commissions/export, analytics×2, billing/invoices, cron/tracking, mock-aramex×2, webhooks/clerk, webhooks/stripe, users/me, feedback)
-- React components: 42 built (17 shadcn/ui primitives + 25 feature components incl. 4 onboarding steps + landing page + feedback-button + full analytics/billing/tracking/dashboard sets)
-- Tests: 164 passing
-- Services: 8 (carriers, comparison, bookings, commission, tracking, analytics, billing, users)
-- Hooks: 10 TanStack Query hooks (added use-user-profile)
+**Current (W9 complete — 2026-03-18):**
+- Drizzle schema: 11 tables live — users, carriers, carrier_zones, carrier_pricing, shipments, commissions, tracking_events, feedback, notifications, audit_logs, push_subscriptions
+- Migrations: 9 applied (0000–0008)
+- API routes: 25 route files live (+push/subscribe, +push/vapid-public-key)
+- React components: 44 built (+push-toggle, +audit-logs page)
+- Tests: 178 passing (1 pre-existing rate-limit flaky)
+- Services: 9 (carriers, comparison, bookings, commission, tracking, analytics, billing, users, audit)
+- Hooks: 11 TanStack Query/browser hooks (+use-web-push)
+- Notification services: 3 (email, whatsapp, web-push)
 
 ---
 
-### 📦 Project Structure (actual — Phase 8 complete + perf fix)
+### 📦 Project Structure (actual — W9 complete)
 
 ```
 wassalha/
@@ -167,7 +174,9 @@ wassalha/
 │   │   │   │       │   ├── page.tsx
 │   │   │   │       │   ├── new/page.tsx
 │   │   │   │       │   └── [id]/page.tsx
-│   │   │   │       └── billing/       # Commission billing (admin only) ✅
+│   │   │   │       ├── billing/       # Commission billing (admin only) ✅
+│   │   │   │       │   └── page.tsx
+│   │   │   │       └── audit-logs/    # Audit trail (admin only) ✅ W9
 │   │   │   │           └── page.tsx
 │   │   │   └── onboarding/            # 3-step onboarding wizard ✅
 │   │   │       ├── page.tsx           # Step orchestrator (already-onboarded redirect)
@@ -194,6 +203,9 @@ wassalha/
 │   │       │   └── export/route.ts    # GET CSV download (admin) ✅
 │   │       ├── billing/
 │   │       │   └── invoices/route.ts  # POST create Stripe invoice, GET list (admin) ✅
+│   │       ├── push/                  # Web Push API ✅ W9
+│   │       │   ├── vapid-public-key/route.ts  # GET VAPID public key (auth required)
+│   │       │   └── subscribe/route.ts         # POST upsert + DELETE remove subscription
 │   │       ├── cron/tracking/route.ts # Tracking poller (daily on Vercel Hobby) ✅
 │   │       ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
 │   │       │   ├── v1/shipping/shipments/create/route.ts
@@ -241,13 +253,16 @@ wassalha/
 │   │   ├── billing/                   # Billing UI (admin) ✅
 │   │   │   ├── retailer-billing-table.tsx
 │   │   │   └── invoice-history-table.tsx
+│   │   ├── notifications/             # Notification UI ✅ W9
+│   │   │   └── push-toggle.tsx        # Bell toggle (subscribe/unsubscribe web push)
 │   │   └── feedback/                  # Feedback widget ✅
 │   │       └── feedback-button.tsx
 │   ├── lib/
 │   │   ├── db/
 │   │   │   ├── schema/                # users, carriers, carrier_zones, carrier_pricing,
-│   │   │   │                          # shipments, commissions, tracking_events, feedback ✅
-│   │   │   ├── migrations/            # 0000–0007 applied ✅
+│   │   │   │                          # shipments, commissions, tracking_events, feedback,
+│   │   │   │                          # notifications, audit_logs, push_subscriptions ✅ W9
+│   │   │   ├── migrations/            # 0000–0008 applied ✅
 │   │   │   ├── seed.ts                # 5 carriers seeded ✅
 │   │   │   └── index.ts               # Drizzle + pg Pool client
 │   │   ├── carriers/
@@ -263,12 +278,14 @@ wassalha/
 │   │   │   ├── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
 │   │   │   ├── analytics.ts           # getAnalyticsSummary, getAnalyticsCharts ✅
 │   │   │   ├── billing.ts             # getRetailersBillingOverview, createRetailerInvoice ✅
-│   │   │   └── users.ts               # getUserProfile, updateUserProfile ✅
+│   │   │   ├── users.ts               # getUserProfile, updateUserProfile ✅
+│   │   │   └── audit.ts               # logAuditEvent (fire-and-forget) ✅ W9
 │   │   ├── supabase/
 │   │   │   └── client.ts              # Supabase client (Realtime) ✅
 │   │   ├── notifications/
 │   │   │   ├── email.ts               # Resend confirmation email ✅
-│   │   │   └── whatsapp.ts            # WhatsApp Business API ✅
+│   │   │   ├── whatsapp.ts            # WhatsApp Business API ✅
+│   │   │   └── web-push.ts            # sendWebPushToUser — VAPID push, auto-removes 410 subs ✅ W9
 │   │   ├── utils/
 │   │   │   └── clerk-webhook.ts       # Clerk user sync handler ✅
 │   │   ├── utils.ts                   # Shared utility functions ✅
@@ -286,9 +303,12 @@ wassalha/
 │   │   ├── use-analytics-summary.ts   # KPI cards query hook ✅
 │   │   ├── use-analytics-charts.ts    # Chart data query hook ✅
 │   │   ├── use-billing.ts             # Invoice list + create mutation hook ✅
-│   │   └── use-user-profile.ts        # Profile query + update mutation hook ✅
+│   │   ├── use-user-profile.ts        # Profile query + update mutation hook ✅
+│   │   └── use-web-push.ts            # Web Push subscribe/unsubscribe hook ✅ W9
 │   ├── middleware.ts                  # Clerk auth — protects /dashboard, /analytics, /admin ✅
 │   └── test-setup.ts                  # Vitest + @testing-library/jest-dom setup
+├── public/
+│   └── sw.js                          # Service worker — push events + notificationclick ✅ W9
 ├── docs/plans/                        # Implementation plans + progress
 ├── docs/mds/                          # Strategic docs
 ├── e2e/                               # Playwright E2E specs (5 flow specs) ✅
@@ -387,7 +407,6 @@ SENDEX_API_TOKEN=
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ...
 ```
 
 **Phase 6 (billing):**
@@ -422,6 +441,15 @@ E2E_RETAILER_EMAIL=retailer+clerk_test@example.com
 E2E_RETAILER_PASSWORD=...
 E2E_ADMIN_EMAIL=admin+clerk_test@example.com
 E2E_ADMIN_PASSWORD=...
+```
+
+**W9 (web push notifications):**
+```bash
+# Generate with: npx web-push generate-vapid-keys
+VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:admin@wassalha.ma
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...   # same as VAPID_PUBLIC_KEY, exposed to browser
 ```
 
 ---

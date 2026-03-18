@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { FeedbackButton } from "@/components/feedback/feedback-button";
+import { PushToggle } from "@/components/notifications/push-toggle";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { sessionClaims } = await auth();
@@ -39,9 +40,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 Facturation
               </Link>
             )}
+            {isAdmin && (
+              <Link
+                href="/admin/audit-logs"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Audit
+              </Link>
+            )}
           </nav>
         </div>
-        <UserButton />
+        <div className="flex items-center gap-3">
+          <PushToggle />
+          <UserButton />
+        </div>
       </header>
       <main className="px-6 py-8">{children}</main>
       <FeedbackButton />

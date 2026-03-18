@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getPrimaryEmail, getFullName } from "@/lib/utils/clerk-webhook";
+import { logAuditEvent } from "@/lib/services/audit";
 
 type ClerkUserEventData = {
   id: string;
@@ -68,6 +69,14 @@ export async function POST(req: Request) {
         updatedAt: new Date(),
       })
       .where(eq(users.id, data.id));
+
+    await logAuditEvent({
+      actorId:    "clerk_webhook",
+      actorRole:  "system",
+      action:     "role.change",
+      targetType: "user",
+      targetId:   data.id,
+    });
   }
 
   if (type === "user.deleted") {
