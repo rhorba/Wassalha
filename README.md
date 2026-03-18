@@ -45,7 +45,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | Booking confirmation + email | ✅ | ✅ | **W4** |
 | Carrier tracking API integrations | ✅ | — | **W5** |
 | Live tracking dashboard | — | ✅ | **W5** |
-| Push notifications (status changes) | ⏳ | ⏳ | **W7** |
+| Push notifications (status changes) | ⏳ | ⏳ | **Post-W8** |
 | Retailer dashboard (KPIs, spend, success rate) | ✅ | ✅ | **W6** |
 | Commission/billing dashboard (Stripe invoices) | ✅ | ✅ | **W6** |
 | Charts + CSV export (Recharts, streaming CSV) | ✅ | ✅ | **W6** |
@@ -240,7 +240,7 @@ wassalha/
 │   │           ├── clerk/route.ts     # Clerk user sync ✅
 │   │           └── stripe/route.ts    # Stripe invoice.paid → mark commissions paid ✅
 │   ├── components/
-│   │   ├── ui/                        # shadcn/ui primitives (16 components) ✅
+│   │   ├── ui/                        # shadcn/ui primitives (17 components) ✅
 │   │   ├── carriers/                  # Carrier admin UI ✅
 │   │   │   ├── carrier-form.tsx
 │   │   │   ├── carrier-table.tsx
@@ -458,19 +458,21 @@ POST   /api/feedback                 Submit in-app feedback (auth + Zod-validate
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ W5 | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ W5 | Supabase service role key |
 | `CRON_SECRET` | ✅ W5 | Bearer token protecting `/api/cron/tracking` — generate with `openssl rand -hex 32` |
-| `NEXT_PUBLIC_MAPBOX_TOKEN` | W6+ | Mapbox access token (route visualization) |
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | W5+ | Mapbox access token (route visualization) |
 | `STRIPE_SECRET_KEY` | ⏳ Deferred | Stripe not supported in Morocco — migration to PayGate Africa planned |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ⏳ Deferred | Same as above |
 | `STRIPE_WEBHOOK_SECRET` | ⏳ Deferred | Same as above |
-| `NEXT_PUBLIC_POSTHOG_KEY` | W6+ | PostHog analytics key |
-| `NEXT_PUBLIC_SENTRY_DSN` | W8 | Sentry error tracking DSN — get from sentry.io project settings → Client Keys |
+| `NEXT_PUBLIC_POSTHOG_KEY` | W8 | PostHog analytics key |
+| `NEXT_PUBLIC_SENTRY_DSN` | W8 | Sentry DSN — **hardcoded** in `sentry.client/server/edge.config.ts` (env var inlining unreliable on Vercel). Set anyway as fallback. |
 | `SENTRY_AUTH_TOKEN` | W8 CI | Source map upload — get from sentry.io → Settings → Auth Tokens |
 | `SENTRY_ORG` | W8 CI | Sentry organization slug (from sentry.io URL) |
 | `SENTRY_PROJECT` | W8 CI | Sentry project slug |
 | `UPSTASH_REDIS_REST_URL` | W8 | Rate limiting — get from upstash.com → Create Database → REST API |
 | `UPSTASH_REDIS_REST_TOKEN` | W8 | Rate limiting — from same Upstash REST API page |
 | `E2E_RETAILER_EMAIL` | W8 CI | Clerk test user email — must end in `+clerk_test` (see E2E setup in signoff plan) |
+| `E2E_RETAILER_PASSWORD` | W8 CI | Clerk test user password |
 | `E2E_ADMIN_EMAIL` | W8 CI | Clerk admin test user email — must end in `+clerk_test` |
+| `E2E_ADMIN_PASSWORD` | W8 CI | Clerk admin test user password |
 
 ---
 
