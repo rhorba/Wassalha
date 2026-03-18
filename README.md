@@ -663,7 +663,13 @@ Steps documented in `docs/plans/2026-03-17-post-phase-8-signoff/plan.md`.
 
 ## Deferred — Future Work
 
-### Custom Domain
+Items are grouped by what's blocking them.
+
+---
+
+### Manual Setup — No Code Required
+
+#### Custom Domain
 
 **Status:** ⏳ To do
 
@@ -679,9 +685,11 @@ Currently live at `https://wassalha.vercel.app`. A custom domain should be set b
 
 ---
 
-These items require research or external partnerships before implementation. Do not implement until the prerequisites are met.
+### Blocked on External Factors — Code Complete or Mostly Complete
 
-### Payment Collection — PayGate Africa (replaces Stripe)
+These items are blocked by external prerequisites (contracts, restrictions, research). Do not implement until the prerequisites are met.
+
+#### Payment Collection — PayGate Africa (replaces Stripe)
 
 **Status:** ⏳ Deferred — research required
 
@@ -694,9 +702,10 @@ Stripe is not available for Morocco-based merchants. The current billing UI (`/a
 - Confirm REST API supports invoice/payment link creation
 - Identify webhook event equivalent to `invoice.paid`
 - Confirm sandbox/test mode availability
-- Files to change: `src/lib/services/billing.ts`, `src/app/api/billing/invoices/route.ts`, `src/app/api/webhooks/stripe/route.ts`
 
-### Carrier API Integrations (Amana, CTM, Marocolis, Sendex)
+**Code required:** Yes — `src/lib/services/billing.ts`, `src/app/api/billing/invoices/route.ts`, `src/app/api/webhooks/stripe/route.ts`
+
+#### Carrier API Integrations (Amana, CTM, Marocolis, Sendex)
 
 **Status:** ⏳ Deferred — carrier partnerships required
 
@@ -704,32 +713,59 @@ The adapter pattern is fully implemented (`src/lib/carriers/adapters/`). All 4 c
 - Signed API contracts with each carrier
 - Live credentials (API keys, account IDs)
 - Testing against carrier sandbox environments
-- Full `createShipment()` + `getTrackingStatus()` implementation per adapter
 
-No code changes needed until credentials are obtained — just fill in the adapter methods and set env vars.
+**Code required:** Minimal — fill in `createShipment()` + `getTrackingStatus()` per adapter, set env vars. No structural changes needed.
 
-### Push Notifications — Status Change Alerts
+#### WhatsApp Status Notifications
+
+**Status:** ⏭ Skipped — Meta account restricted
+
+WhatsApp booking confirmation (W4) and recipient notification (W7) are wired and skip gracefully if credentials are missing. Blocked by Meta Business Portfolio restriction (appeal submitted 2026-03-18).
+
+**Code required:** None — already implemented in `src/lib/notifications/whatsapp.ts`. Just set `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` once Meta resolves the restriction.
+
+---
+
+### Future Sprints — Requires Code Implementation
+
+These features are not yet started and require full implementation work.
+
+#### Push Notifications — Status Change Alerts
 
 **Status:** ⏳ Post-W8 — not implemented
 
-WhatsApp booking confirmation (W4) and recipient notification (W7) are wired. However, real-time push notifications for shipment status changes (e.g. browser push, FCM, or WhatsApp status update messages) are not implemented.
+Real-time push notifications for shipment status changes are not implemented. WhatsApp booking notifications exist but only fire at booking time, not on status updates.
 
 **Options to evaluate:**
-- WhatsApp status update messages via existing `whatsapp.ts` (simplest — reuse current Meta integration)
+- WhatsApp status update messages via existing `whatsapp.ts` (simplest — reuse current Meta integration, but blocked on Meta restriction above)
 - Browser Web Push API (no extra cost, works on desktop/Android)
 - FCM (Firebase Cloud Messaging) for mobile push
 
-**Prerequisite:** Meta Business Portfolio restriction must be resolved before WhatsApp status messages are viable. See `WHATSAPP_API_TOKEN` note above.
+**Code required:** Yes — new service, subscription management, frontend hooks, and `notifications` DB table (schema + migration + API).
 
-### Mapbox Route Visualization
+#### Mapbox Route Visualization
 
-**Status:** ⏳ Deferred — planned Phase 5, not yet implemented
+**Status:** ⏳ Deferred — not yet implemented
 
 `NEXT_PUBLIC_MAPBOX_TOKEN` is in `.env.example` but Mapbox is not used anywhere in the codebase. The tracking timeline (`tracking-timeline.tsx`) shows a text stepper only.
 
-**What to build:** Display shipment route on a Mapbox GL JS map in the shipment detail page (`/shipments/[id]`), showing origin → destination with carrier route overlay.
+**Code required:** Yes — new `<MapboxRouteMap>` component + integration in `src/components/tracking/live-shipment-detail.tsx` and `src/app/(app)/(dashboard)/shipments/[id]/page.tsx`.
 
-**Files to change:** `src/app/(app)/(dashboard)/shipments/[id]/page.tsx`, `src/components/tracking/live-shipment-detail.tsx` — add a `<MapboxRouteMap>` component.
+#### `notifications` Table
+
+**Status:** ⏳ Post-W8 — not yet created
+
+A log of all WhatsApp/email notifications sent per shipment.
+
+**Code required:** Yes — Drizzle schema + migration + service layer updates in `bookings.ts` and `whatsapp.ts` to insert a row on each send.
+
+#### `audit_logs` Table
+
+**Status:** ⏳ Post-W8 — not yet created
+
+System audit trail for admin actions (carrier CRUD, invoice generation, role changes).
+
+**Code required:** Yes — Drizzle schema + migration + middleware or service-layer hooks to log events on write operations.
 
 ---
 
