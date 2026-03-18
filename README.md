@@ -708,6 +708,29 @@ The adapter pattern is fully implemented (`src/lib/carriers/adapters/`). All 4 c
 
 No code changes needed until credentials are obtained — just fill in the adapter methods and set env vars.
 
+### Push Notifications — Status Change Alerts
+
+**Status:** ⏳ Post-W8 — not implemented
+
+WhatsApp booking confirmation (W4) and recipient notification (W7) are wired. However, real-time push notifications for shipment status changes (e.g. browser push, FCM, or WhatsApp status update messages) are not implemented.
+
+**Options to evaluate:**
+- WhatsApp status update messages via existing `whatsapp.ts` (simplest — reuse current Meta integration)
+- Browser Web Push API (no extra cost, works on desktop/Android)
+- FCM (Firebase Cloud Messaging) for mobile push
+
+**Prerequisite:** Meta Business Portfolio restriction must be resolved before WhatsApp status messages are viable. See `WHATSAPP_API_TOKEN` note above.
+
+### Mapbox Route Visualization
+
+**Status:** ⏳ Deferred — planned Phase 5, not yet implemented
+
+`NEXT_PUBLIC_MAPBOX_TOKEN` is in `.env.example` but Mapbox is not used anywhere in the codebase. The tracking timeline (`tracking-timeline.tsx`) shows a text stepper only.
+
+**What to build:** Display shipment route on a Mapbox GL JS map in the shipment detail page (`/shipments/[id]`), showing origin → destination with carrier route overlay.
+
+**Files to change:** `src/app/(app)/(dashboard)/shipments/[id]/page.tsx`, `src/components/tracking/live-shipment-detail.tsx` — add a `<MapboxRouteMap>` component.
+
 ---
 
 ## License
