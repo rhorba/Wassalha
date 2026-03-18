@@ -661,6 +661,22 @@ Steps documented in `docs/plans/2026-03-17-post-phase-8-signoff/plan.md`.
 
 ## Deferred — Future Work
 
+### Custom Domain
+
+**Status:** ⏳ To do
+
+Currently live at `https://wassalha.vercel.app`. A custom domain should be set before public launch.
+
+**Recommended:** `wassalha.ma` — official Moroccan `.ma` domain, builds trust with local retailers (~200 MAD/year).
+
+**Steps:**
+1. Buy domain from [registre.ma](https://registre.ma) (for `.ma`) or Namecheap/GoDaddy (for `.com`)
+2. Vercel → wassalha project → Settings → Domains → Add domain
+3. Copy the A record or CNAME Vercel provides → paste into registrar DNS settings
+4. Propagates in 5–30 min
+
+---
+
 These items require research or external partnerships before implementation. Do not implement until the prerequisites are met.
 
 ### Payment Collection — PayGate Africa (replaces Stripe)
