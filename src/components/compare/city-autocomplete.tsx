@@ -83,5 +83,6 @@ export function CityAutocomplete({
 
   // Uncontrolled — Google Places writes directly to the DOM input.
   // Do NOT add value= here; it breaks the Places autocomplete interaction.
-  return <Input ref={inputRef} id={id} placeholder={placeholder} />;
+  // onChange propagates manual typing (needed for E2E tests and non-Places usage).
+  return <Input ref={inputRef} id={id} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />;
 }

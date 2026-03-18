@@ -41,7 +41,7 @@ export function RetailerBillingTable({ rows }: { rows: RetailerBillingRow[] }) {
 
   return (
     <div className="rounded-md border overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm" data-testid="billing-table">
         <thead className="bg-muted/50">
           <tr>
             <th className="px-4 py-3 text-left font-medium">Revendeur</th>

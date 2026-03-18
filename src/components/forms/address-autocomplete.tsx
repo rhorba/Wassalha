@@ -11,12 +11,14 @@ export interface AddressValue {
 }
 
 interface AddressAutocompleteProps {
+  id?: string;
   value?: string;
   onChange: (value: AddressValue) => void;
   placeholder?: string;
 }
 
 export function AddressAutocomplete({
+  id,
   value,
   onChange,
   placeholder = "Enter address...",
@@ -62,6 +64,7 @@ export function AddressAutocomplete({
     // Plain text fallback — no Google Maps API key or quota exceeded
     return (
       <Input
+        id={id}
         value={inputValue}
         onChange={(e) => {
           setInputValue(e.target.value);
@@ -72,5 +75,13 @@ export function AddressAutocomplete({
     );
   }
 
-  return <Input ref={inputRef} defaultValue={value} placeholder={placeholder} />;
+  return (
+    <Input
+      ref={inputRef}
+      id={id}
+      defaultValue={value}
+      placeholder={placeholder}
+      onChange={(e) => onChange({ address: e.target.value, lat: 0, lng: 0 })}
+    />
+  );
 }

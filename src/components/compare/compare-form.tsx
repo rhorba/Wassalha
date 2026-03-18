@@ -44,7 +44,7 @@ export function CompareForm({ onSubmit, isLoading, defaultOriginCity }: CompareF
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1">
-          <Label htmlFor="originCity">From city</Label>
+          <Label htmlFor="originCity">Origine</Label>
           <CityAutocomplete
             id="originCity"
             placeholder="Casablanca"
@@ -61,7 +61,7 @@ export function CompareForm({ onSubmit, isLoading, defaultOriginCity }: CompareF
           )}
         </div>
         <div className="space-y-1">
-          <Label htmlFor="destinationCity">To city</Label>
+          <Label htmlFor="destinationCity">Destination</Label>
           <CityAutocomplete
             id="destinationCity"
             placeholder="Marrakech"
@@ -78,7 +78,7 @@ export function CompareForm({ onSubmit, isLoading, defaultOriginCity }: CompareF
           )}
         </div>
         <div className="space-y-1">
-          <Label htmlFor="weightG">Weight (grams)</Label>
+          <Label htmlFor="weightG">Poids (grammes)</Label>
           <Input
             id="weightG"
             type="number"
@@ -90,7 +90,7 @@ export function CompareForm({ onSubmit, isLoading, defaultOriginCity }: CompareF
           )}
         </div>
         <div className="space-y-1">
-          <Label htmlFor="codAmountMad">COD Amount (centimes)</Label>
+          <Label htmlFor="codAmountMad">Valeur COD (MAD)</Label>
           <Input
             id="codAmountMad"
             type="number"
@@ -115,7 +115,7 @@ export function CompareForm({ onSubmit, isLoading, defaultOriginCity }: CompareF
       </div>
 
       <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
-        {isLoading ? "Comparing..." : "Compare Carriers"}
+        {isLoading ? "Comparaison…" : "Comparer"}
       </Button>
     </form>
   );
