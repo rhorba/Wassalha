@@ -20,12 +20,14 @@ Focus: Type-safety, performance, bilingual support (French/Darija), RBAC securit
 - **Auth**: Clerk (hosted UI + publicMetadata role + JWT template). NextAuth dropped.
 - **Real-time**: Supabase Realtime (Phase 5 — implemented). postgres_changes for tracking_events INSERT + polling fallback for shipments UPDATE.
 - **Maps**: Google Maps API (address autocomplete, Morocco-restricted) + Mapbox (Phase 5 route visualization).
-- **Payments**: Stripe (Phase 6 — commission billing invoices). Not yet integrated.
+- **Payments**: Stripe (Phase 6 — commission billing invoices). Live — needs `STRIPE_SECRET_KEY` set.
 - **Email**: Resend (Phase 4 — booking confirmation). Lazy-initialized, skipped if key missing.
-- **Notifications**: WhatsApp Business API (Phase 7 — recipient SMS). Not yet integrated.
-- **Deployment**: Vercel (frontend) + Railway or Fly.io (backend services).
+- **Notifications**: WhatsApp Business API (Phase 7 — recipient SMS). Wired in `bookings.ts`, skips if credentials missing.
+- **Deployment**: Vercel (app — https://wassalha.vercel.app). Connected to `main` branch.
 - **CI/CD**: GitHub Actions — lint + tsc + vitest + build on every push.
-- **Monitoring**: Sentry (`@sentry/nextjs` — Phase 8 ✅) + PostHog (`posthog-js` — Phase 8 ✅).
+- **Monitoring**: Sentry (`@sentry/nextjs` — Phase 8 ✅) + PostHog (`posthog-js` — Phase 8 ✅). Both live in production.
+- **Rate limiting**: Upstash Redis (`@upstash/ratelimit` — Phase 8 ✅). 20 req/min sliding window on `/api/carriers/compare`.
+- **Performance**: Vercel Speed Insights (`@vercel/speed-insights`). Root layout stripped to minimal HTML shell — landing page pre-renders as fully static.
 - **Build**: pnpm v9+ (global package manager).
 
 ## Development Commands
@@ -92,6 +94,8 @@ Marketing landing page (Hero in Darija + French, FAQ accordion, CTA), 3-step onb
 
 E2E Playwright (5 flow specs), Lighthouse CI (perf ≥ 80), next-safe CSP headers, Upstash rate limiting (compare/shipments/billing), Sentry error monitoring, PostHog analytics, in-app feedback widget (schema + API + component). **Complete. 164 tests passing.**
 
+**Post-Phase-8 performance fix (2026-03-18):** Root cause — `ClerkProvider` + PostHog/TanStack providers loaded on every page including the static landing page, blocking LCP with cross-origin Clerk JS. Fix: stripped root layout to minimal HTML shell (`src/app/layout.tsx`); created `src/app/(app)/layout.tsx` with ClerkProvider + Providers + Toaster + SpeedInsights, wrapping only the `(app)` route group (auth/dashboard/onboarding). Landing page `/` now pre-renders as fully static (○) with no cross-origin blocking scripts. `lighthouserc.js` updated to test only `/` (removed `/dashboard` which redirects to Clerk-hosted sign-in — uncontrollable). All route groups (`(auth)/`, `(dashboard)/`, `onboarding/`) moved under `src/app/(app)/`.
+
 ---
 
 ### 🎯 Feature Status
@@ -118,71 +122,91 @@ E2E Playwright (5 flow specs), Lighthouse CI (perf ≥ 80), next-safe CSP header
 
 ### 📊 Codebase Metrics
 
-**Current (Phase 8 complete):**
+**Current (Phase 8 complete + perf fix applied):**
 - Drizzle schema: 8 tables live — users (+stripeCustomerId +businessName +phone +defaultSenderAddress +defaultSenderCity), carriers, carrier_zones, carrier_pricing, shipments, commissions (+stripeInvoiceId), tracking_events, feedback
 - Migrations: 8 applied (0000–0007)
 - API routes: 23 route files live (carriers CRUD×7, compare, shipments×3, commissions/export, analytics×2, billing/invoices, cron/tracking, mock-aramex×2, webhooks/clerk, webhooks/stripe, users/me, feedback)
-- React components: 37 built (17 shadcn/ui primitives + 20 feature components incl. 4 onboarding steps + landing page + feedback-button)
+- React components: 42 built (17 shadcn/ui primitives + 25 feature components incl. 4 onboarding steps + landing page + feedback-button + full analytics/billing/tracking/dashboard sets)
 - Tests: 164 passing
-- Services: 7 (carriers, comparison, bookings, commission, tracking, analytics, billing)
-- Hooks: 10 TanStack Query hooks
-
-**Planned (Phases 6–8):**
-- Additional tables: notifications, audit_logs
-- No separate `bookings` table — booking data lives in `shipments`
-- Target API routes: ~15 total
-- Target components: ~25+
+- Services: 8 (carriers, comparison, bookings, commission, tracking, analytics, billing, users)
+- Hooks: 10 TanStack Query hooks (added use-user-profile)
 
 ---
 
-### 📦 Project Structure (actual — Phase 5)
+### 📦 Project Structure (actual — Phase 8 complete + perf fix)
 
 ```
 wassalha/
 ├── src/
 │   ├── app/                           # Next.js 15 App Router
-│   │   ├── (auth)/                    # Clerk hosted auth pages
-│   │   │   ├── layout.tsx
-│   │   │   ├── sign-in/[[...sign-in]]/page.tsx
-│   │   │   └── sign-up/[[...sign-up]]/page.tsx
-│   │   ├── (dashboard)/               # Protected dashboard routes (Clerk middleware)
-│   │   │   ├── layout.tsx             # Dashboard shell
-│   │   │   ├── dashboard/page.tsx     # Dashboard home
-│   │   │   ├── compare/               # Carrier comparison ✅
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── compare-page-client.tsx
-│   │   │   ├── analytics/             # Analytics charts ✅
-│   │   │   │   └── page.tsx
-│   │   │   ├── shipments/             # Shipments ✅
-│   │   │   │   ├── page.tsx           # Shipments list
-│   │   │   │   └── [id]/page.tsx      # Shipment detail + live tracking
-│   │   │   └── admin/
-│   │   │       ├── carriers/          # Carrier admin CRUD (admin only) ✅
-│   │   │       │   ├── page.tsx
-│   │   │       │   ├── new/page.tsx
-│   │   │       │   └── [id]/page.tsx
-│   │   │       └── billing/           # Commission billing (admin only) ✅
-│   │   │           └── page.tsx
-│   │   ├── api/                       # Next.js API Routes
-│   │   │   ├── carriers/              # Carrier CRUD + comparison ✅
-│   │   │   │   ├── route.ts           # GET list, POST create
-│   │   │   │   ├── [id]/route.ts      # GET, PUT, DELETE
-│   │   │   │   ├── [id]/zones/route.ts
-│   │   │   │   ├── [id]/zones/[zoneId]/route.ts
-│   │   │   │   ├── [id]/zones/[zoneId]/pricing/route.ts
-│   │   │   │   ├── [id]/zones/[zoneId]/pricing/[pricingId]/route.ts
-│   │   │   │   └── compare/route.ts   # POST comparison engine
-│   │   │   ├── shipments/             # Booking ✅
-│   │   │   │   ├── route.ts           # POST book, GET list
-│   │   │   │   └── [id]/route.ts      # GET single
-│   │   │   ├── cron/tracking/route.ts # Hourly tracking poller ✅
-│   │   │   ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
-│   │   │   └── webhooks/clerk/route.ts # Clerk user sync ✅
-│   │   ├── layout.tsx                 # Root layout (providers)
-│   │   ├── page.tsx                   # Landing page (placeholder)
-│   │   └── providers.tsx              # TanStack Query + Clerk providers
+│   │   ├── layout.tsx                 # Root layout — minimal HTML shell only (no providers)
+│   │   │                              # Landing page / pre-renders fully static (no Clerk JS)
+│   │   ├── page.tsx                   # Marketing landing page ✅ (static, no auth dependency)
+│   │   ├── global-error.tsx           # Sentry global error boundary ✅
+│   │   ├── globals.css                # Tailwind 4 global styles
+│   │   ├── providers.tsx              # TanStack Query provider (used by (app)/layout.tsx)
+│   │   ├── (app)/                     # Route group: all app routes (auth + dashboard + onboarding)
+│   │   │   ├── layout.tsx             # App shell — ClerkProvider + Providers + Toaster + SpeedInsights
+│   │   │   ├── (auth)/                # Clerk hosted auth pages
+│   │   │   │   ├── layout.tsx
+│   │   │   │   ├── sign-in/[[...sign-in]]/page.tsx
+│   │   │   │   └── sign-up/[[...sign-up]]/page.tsx
+│   │   │   ├── (dashboard)/           # Protected routes (Clerk middleware)
+│   │   │   │   ├── layout.tsx         # Dashboard shell (sidebar nav)
+│   │   │   │   ├── dashboard/page.tsx # Dashboard home (KPI cards + recent shipments)
+│   │   │   │   ├── compare/           # Carrier comparison ✅
+│   │   │   │   │   ├── page.tsx
+│   │   │   │   │   └── compare-page-client.tsx  # Pre-fills originCity from user profile
+│   │   │   │   ├── analytics/         # Analytics charts ✅
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── shipments/         # Shipments ✅
+│   │   │   │   │   ├── page.tsx       # Shipments list
+│   │   │   │   │   └── [id]/page.tsx  # Shipment detail + live tracking
+│   │   │   │   └── admin/
+│   │   │   │       ├── carriers/      # Carrier admin CRUD (admin only) ✅
+│   │   │   │       │   ├── page.tsx
+│   │   │   │       │   ├── new/page.tsx
+│   │   │   │       │   └── [id]/page.tsx
+│   │   │   │       └── billing/       # Commission billing (admin only) ✅
+│   │   │   │           └── page.tsx
+│   │   │   └── onboarding/            # 3-step onboarding wizard ✅
+│   │   │       ├── page.tsx           # Step orchestrator (already-onboarded redirect)
+│   │   │       ├── step-business.tsx  # Step 1: business name + phone
+│   │   │       ├── step-address.tsx   # Step 2: default sender address + city
+│   │   │       └── step-done.tsx      # Step 3: success + CTA → /compare
+│   │   └── api/                       # Next.js API Routes
+│   │       ├── carriers/              # Carrier CRUD + comparison ✅
+│   │       │   ├── route.ts           # GET list, POST create
+│   │       │   ├── [id]/route.ts      # GET, PUT, DELETE
+│   │       │   ├── [id]/zones/route.ts
+│   │       │   ├── [id]/zones/[zoneId]/route.ts
+│   │       │   ├── [id]/zones/[zoneId]/pricing/route.ts
+│   │       │   ├── [id]/zones/[zoneId]/pricing/[pricingId]/route.ts
+│   │       │   └── compare/route.ts   # POST comparison engine (rate limited)
+│   │       ├── shipments/             # Booking ✅
+│   │       │   ├── route.ts           # POST book, GET list
+│   │       │   ├── [id]/route.ts      # GET single
+│   │       │   └── export/route.ts    # GET CSV download
+│   │       ├── analytics/             # Analytics ✅
+│   │       │   ├── summary/route.ts   # GET KPI cards
+│   │       │   └── charts/route.ts    # GET time-series + carrier breakdown
+│   │       ├── commissions/
+│   │       │   └── export/route.ts    # GET CSV download (admin) ✅
+│   │       ├── billing/
+│   │       │   └── invoices/route.ts  # POST create Stripe invoice, GET list (admin) ✅
+│   │       ├── cron/tracking/route.ts # Tracking poller (daily on Vercel Hobby) ✅
+│   │       ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
+│   │       │   ├── v1/shipping/shipments/create/route.ts
+│   │       │   └── v1/tracking/shipments/track/route.ts
+│   │       ├── users/me/route.ts      # GET + PATCH user profile ✅
+│   │       ├── feedback/route.ts      # POST submit feedback (auth + Zod) ✅
+│   │       └── webhooks/
+│   │           ├── clerk/route.ts     # Clerk user sync ✅
+│   │           └── stripe/route.ts    # Stripe invoice.paid → mark commissions paid ✅
 │   ├── components/
-│   │   ├── ui/                        # shadcn/ui primitives (12 components) ✅
+│   │   ├── ui/                        # shadcn/ui primitives (17 components) ✅
+│   │   │   # accordion, badge, button, calendar, card, form, input, label,
+│   │   │   # popover, separator, sheet, sonner, table, tabs, textarea, toggle, toggle-group
 │   │   ├── carriers/                  # Carrier admin UI ✅
 │   │   │   ├── carrier-form.tsx
 │   │   │   ├── carrier-table.tsx
@@ -201,15 +225,29 @@ wassalha/
 │   │   ├── shipments/                 # Shipments table ✅
 │   │   │   ├── shipments-table.tsx
 │   │   │   └── status-badge.tsx
-│   │   └── tracking/                  # Tracking UI ✅
-│   │       ├── tracking-timeline.tsx
-│   │       └── live-shipment-detail.tsx
+│   │   ├── tracking/                  # Tracking UI ✅
+│   │   │   ├── tracking-timeline.tsx
+│   │   │   └── live-shipment-detail.tsx
+│   │   ├── dashboard/                 # KPI dashboard ✅
+│   │   │   ├── stat-card.tsx
+│   │   │   └── kpi-row.tsx
+│   │   ├── analytics/                 # Analytics charts ✅
+│   │   │   ├── chart-panel.tsx
+│   │   │   ├── date-range-picker.tsx
+│   │   │   └── charts/
+│   │   │       ├── volume-chart.tsx
+│   │   │       ├── spend-chart.tsx
+│   │   │       └── carrier-chart.tsx
+│   │   ├── billing/                   # Billing UI (admin) ✅
+│   │   │   ├── retailer-billing-table.tsx
+│   │   │   └── invoice-history-table.tsx
+│   │   └── feedback/                  # Feedback widget ✅
+│   │       └── feedback-button.tsx
 │   ├── lib/
 │   │   ├── db/
-│   │   │   ├── schema/                # users, carriers, carrier_zones,
-│   │   │   │                          # carrier_pricing, shipments, commissions,
-│   │   │   │                          # tracking_events ✅
-│   │   │   ├── migrations/            # 0000–0004 applied ✅
+│   │   │   ├── schema/                # users, carriers, carrier_zones, carrier_pricing,
+│   │   │   │                          # shipments, commissions, tracking_events, feedback ✅
+│   │   │   ├── migrations/            # 0000–0007 applied ✅
 │   │   │   ├── seed.ts                # 5 carriers seeded ✅
 │   │   │   └── index.ts               # Drizzle + pg Pool client
 │   │   ├── carriers/
@@ -224,18 +262,20 @@ wassalha/
 │   │   │   ├── commission.ts          # calculateCommission (dual-rate) ✅
 │   │   │   ├── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
 │   │   │   ├── analytics.ts           # getAnalyticsSummary, getAnalyticsCharts ✅
-│   │   │   └── billing.ts             # getRetailersBillingOverview, createRetailerInvoice ✅
+│   │   │   ├── billing.ts             # getRetailersBillingOverview, createRetailerInvoice ✅
+│   │   │   └── users.ts               # getUserProfile, updateUserProfile ✅
 │   │   ├── supabase/
 │   │   │   └── client.ts              # Supabase client (Realtime) ✅
 │   │   ├── notifications/
 │   │   │   ├── email.ts               # Resend confirmation email ✅
-│   │   │   └── whatsapp.ts            # WhatsApp Business API (Phase 7) ✅
+│   │   │   └── whatsapp.ts            # WhatsApp Business API ✅
 │   │   ├── utils/
 │   │   │   └── clerk-webhook.ts       # Clerk user sync handler ✅
 │   │   ├── utils.ts                   # Shared utility functions ✅
 │   │   └── validations/
 │   │       ├── carriers.ts            # Carrier + compare Zod schemas ✅
-│   │       └── shipments.ts           # BookingInput + response schemas ✅
+│   │       ├── shipments.ts           # BookingInput + response schemas ✅
+│   │       └── users.ts               # UserProfileSchema + UserProfilePatchSchema ✅
 │   ├── hooks/
 │   │   ├── use-carriers.ts            # TanStack Query carrier hooks ✅
 │   │   ├── use-compare.ts             # Comparison mutation hook ✅
@@ -243,16 +283,20 @@ wassalha/
 │   │   ├── use-shipments.ts           # Shipments query hook ✅
 │   │   ├── use-shipment-status.ts     # Realtime + 10s polling status hook ✅
 │   │   ├── use-tracking-events.ts     # Realtime INSERT events hook ✅
-│   │   ├── use-analytics-summary.ts   # KPI summary query hook ✅
+│   │   ├── use-analytics-summary.ts   # KPI cards query hook ✅
 │   │   ├── use-analytics-charts.ts    # Chart data query hook ✅
-│   │   └── use-billing.ts             # Invoice list + create mutation hook ✅
+│   │   ├── use-billing.ts             # Invoice list + create mutation hook ✅
+│   │   └── use-user-profile.ts        # Profile query + update mutation hook ✅
 │   ├── middleware.ts                  # Clerk auth — protects /dashboard, /analytics, /admin ✅
 │   └── test-setup.ts                  # Vitest + @testing-library/jest-dom setup
 ├── docs/plans/                        # Implementation plans + progress
 ├── docs/mds/                          # Strategic docs
+├── e2e/                               # Playwright E2E specs (5 flow specs) ✅
+├── lighthouserc.js                    # Lighthouse CI — tests / only (static landing page)
+├── playwright.config.ts
 ├── drizzle.config.ts
 ├── vitest.config.ts
-├── next.config.ts
+├── next.config.ts                     # CSP headers (manual, dev disabled), cron schedule
 ├── tsconfig.json
 ├── components.json                    # shadcn/ui config
 ├── .env.example
@@ -350,6 +394,7 @@ NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ...
 ```bash
 STRIPE_SECRET_KEY=sk_test_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 NEXT_PUBLIC_POSTHOG_KEY=phc_...
 ```
 
@@ -360,9 +405,23 @@ WHATSAPP_PHONE_ID=...
 WHATSAPP_TEMPLATE_NAME=shipment_notification
 ```
 
-**Phase 8 (monitoring):**
+**Phase 8 (monitoring + rate limiting + E2E):**
 ```bash
-SENTRY_DSN=https://...@sentry.io/...
+# Sentry — DSN hardcoded in sentry.client/server/edge.config.ts
+# (env var inlining issue with Vercel — do not rely on NEXT_PUBLIC_SENTRY_DSN)
+SENTRY_AUTH_TOKEN=...        # Source map upload (CI)
+SENTRY_ORG=...               # Org slug
+SENTRY_PROJECT=...           # Project slug
+
+# Upstash rate limiting
+UPSTASH_REDIS_REST_URL=https://...upstash.io
+UPSTASH_REDIS_REST_TOKEN=...
+
+# E2E test users (must have +clerk_test suffix)
+E2E_RETAILER_EMAIL=retailer+clerk_test@example.com
+E2E_RETAILER_PASSWORD=...
+E2E_ADMIN_EMAIL=admin+clerk_test@example.com
+E2E_ADMIN_PASSWORD=...
 ```
 
 ---

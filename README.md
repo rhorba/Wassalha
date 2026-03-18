@@ -25,7 +25,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | W5 | Real-time Tracking | ✅ Done | Live tracking stepper + badge — 107 tests passing |
 | W6 | Dashboard + Analytics | ✅ Done | KPI dashboard + charts + Stripe billing — 146 tests passing |
 | W7 | Landing Page + Onboarding | ✅ Done | Landing page (Darija + French) + 3-step onboarding + user profile API — 157 tests passing |
-| W8 | Testing + Launch Prep | ✅ Done | E2E Playwright (5 specs), Lighthouse CI, CSP headers, rate limiting, Sentry, PostHog, feedback widget — 164 tests passing |
+| W8 | Testing + Launch Prep | ✅ Done | E2E Playwright (5 specs), Lighthouse CI, CSP headers, rate limiting, Sentry, PostHog, feedback widget — 164 tests passing. Perf fix: root layout restructured — landing page now fully static. |
 
 ### Feature Status
 
@@ -69,17 +69,19 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | **Database** | PostgreSQL (Neon cloud) |
 | **ORM** | Drizzle ORM + Drizzle Kit (migrations) |
 | **Auth** | Clerk (hosted UI + publicMetadata role) |
-| **Real-time** | Supabase Realtime / Socket.io |
-| **Maps** | Google Maps API / Mapbox |
-| **Payments** | Stripe + CMI (local Moroccan cards) |
-| **Email** | Resend |
-| **Notifications** | WhatsApp Business API |
+| **Real-time** | Supabase Realtime (postgres_changes) + 10s polling fallback |
+| **Maps** | Google Maps API (address autocomplete, Morocco-restricted) |
+| **Payments** | Stripe (commission billing invoices) |
+| **Email** | Resend (booking confirmation — skipped if key missing) |
+| **Notifications** | WhatsApp Business API (wired, skips if credentials missing) |
+| **Rate limiting** | Upstash Redis (`@upstash/ratelimit` — 20 req/min on compare) |
 | **Validation** | Zod (shared schemas for API + forms) |
 | **Forms** | React Hook Form + Zod resolver |
 | **Charts** | Recharts |
-| **Deployment** | Vercel (app) + Railway / Fly.io (services) |
+| **Deployment** | Vercel — https://wassalha.vercel.app (main branch auto-deploy) |
 | **CI/CD** | GitHub Actions |
-| **Monitoring** | Sentry (errors) + PostHog (analytics) |
+| **Monitoring** | Sentry (errors) + PostHog (analytics — EU region) |
+| **Performance** | Vercel Speed Insights. Static landing page (no Clerk JS). |
 | **Testing** | Vitest (unit) + Playwright (E2E) |
 | **Code Quality** | ESLint + Prettier + TypeScript strict mode |
 
@@ -173,60 +175,70 @@ pnpm start
 wassalha/
 ├── src/
 │   ├── app/                           # Next.js 15 App Router
-│   │   ├── (auth)/                    # Clerk hosted auth pages
-│   │   │   ├── layout.tsx
-│   │   │   ├── sign-in/[[...sign-in]]/page.tsx
-│   │   │   └── sign-up/[[...sign-up]]/page.tsx
-│   │   ├── (dashboard)/               # Protected routes (Clerk middleware)
-│   │   │   ├── layout.tsx             # Dashboard shell
-│   │   │   ├── dashboard/page.tsx     # Dashboard home
-│   │   │   ├── compare/               # Carrier comparison ✅
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── compare-page-client.tsx  # Pre-fills originCity from user profile
-│   │   │   ├── shipments/             # Shipments ✅
-│   │   │   │   ├── page.tsx           # Shipments list
-│   │   │   │   └── [id]/page.tsx      # Shipment detail + live tracking
-│   │   │   └── admin/carriers/        # Carrier admin CRUD (admin only) ✅
-│   │   │       ├── page.tsx           # Carrier list
-│   │   │       ├── new/page.tsx       # Create carrier
-│   │   │       └── [id]/page.tsx      # Edit carrier
-│   │   ├── onboarding/                # 3-step onboarding wizard ✅
-│   │   │   ├── page.tsx               # Step orchestrator (already-onboarded redirect)
-│   │   │   ├── step-business.tsx      # Step 1: business name + phone
-│   │   │   ├── step-address.tsx       # Step 2: default sender address + city
-│   │   │   └── step-done.tsx          # Step 3: success + CTA → /compare
-│   │   ├── api/                       # Next.js API Routes
-│   │   │   ├── carriers/              # Carrier CRUD + comparison ✅
-│   │   │   │   ├── route.ts           # GET list, POST create
-│   │   │   │   ├── [id]/route.ts      # GET, PUT, DELETE
-│   │   │   │   ├── [id]/zones/route.ts           # GET, POST zones
-│   │   │   │   ├── [id]/zones/[zoneId]/route.ts  # DELETE zone
-│   │   │   │   ├── [id]/zones/[zoneId]/pricing/route.ts          # GET, POST pricing
-│   │   │   │   ├── [id]/zones/[zoneId]/pricing/[pricingId]/route.ts  # DELETE pricing
-│   │   │   │   └── compare/route.ts   # POST comparison engine
-│   │   │   ├── analytics/             # Analytics ✅
-│   │   │   │   ├── summary/route.ts   # GET KPI cards
-│   │   │   │   └── charts/route.ts    # GET time-series + carrier breakdown
-│   │   │   ├── shipments/             # Booking ✅
-│   │   │   │   ├── route.ts           # POST book, GET list
-│   │   │   │   ├── [id]/route.ts      # GET single
-│   │   │   │   └── export/route.ts    # GET CSV download
-│   │   │   ├── commissions/
-│   │   │   │   └── export/route.ts    # GET CSV download (admin) ✅
-│   │   │   ├── billing/
-│   │   │   │   └── invoices/route.ts  # POST create Stripe invoice, GET list (admin) ✅
-│   │   │   ├── cron/tracking/route.ts # Hourly tracking poller ✅
-│   │   │   ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
-│   │   │   │   ├── v1/shipping/shipments/create/route.ts
-│   │   │   │   └── v1/tracking/shipments/track/route.ts
-│   │   │   ├── users/me/route.ts      # GET + PATCH user profile ✅
-│   │   │   ├── feedback/route.ts      # POST submit feedback (auth + Zod) ✅
-│   │   │   └── webhooks/
-│   │   │       ├── clerk/route.ts     # Clerk user sync ✅
-│   │   │       └── stripe/route.ts    # Stripe invoice.paid → mark commissions paid ✅
-│   │   ├── layout.tsx                 # Root layout (ClerkProvider + QueryProvider)
-│   │   ├── page.tsx                   # Marketing landing page ✅
-│   │   └── providers.tsx              # TanStack Query + Clerk providers
+│   │   ├── layout.tsx                 # Root layout — minimal HTML shell only (no providers)
+│   │   │                              # Landing page / pre-renders fully static (no Clerk JS)
+│   │   ├── page.tsx                   # Marketing landing page ✅ (static, no auth dependency)
+│   │   ├── global-error.tsx           # Sentry global error boundary ✅
+│   │   ├── globals.css                # Tailwind 4 global styles
+│   │   ├── providers.tsx              # TanStack Query provider (used by (app)/layout.tsx)
+│   │   ├── (app)/                     # Route group: all app routes (auth + dashboard + onboarding)
+│   │   │   ├── layout.tsx             # App shell — ClerkProvider + Providers + Toaster + SpeedInsights
+│   │   │   ├── (auth)/                # Clerk hosted auth pages
+│   │   │   │   ├── layout.tsx
+│   │   │   │   ├── sign-in/[[...sign-in]]/page.tsx
+│   │   │   │   └── sign-up/[[...sign-up]]/page.tsx
+│   │   │   ├── (dashboard)/           # Protected routes (Clerk middleware)
+│   │   │   │   ├── layout.tsx         # Dashboard shell
+│   │   │   │   ├── dashboard/page.tsx # Dashboard home
+│   │   │   │   ├── compare/           # Carrier comparison ✅
+│   │   │   │   │   ├── page.tsx
+│   │   │   │   │   └── compare-page-client.tsx  # Pre-fills originCity from user profile
+│   │   │   │   ├── analytics/         # Analytics charts ✅
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── shipments/         # Shipments ✅
+│   │   │   │   │   ├── page.tsx       # Shipments list
+│   │   │   │   │   └── [id]/page.tsx  # Shipment detail + live tracking
+│   │   │   │   └── admin/
+│   │   │   │       ├── carriers/      # Carrier admin CRUD (admin only) ✅
+│   │   │   │       │   ├── page.tsx
+│   │   │   │       │   ├── new/page.tsx
+│   │   │   │       │   └── [id]/page.tsx
+│   │   │   │       └── billing/       # Commission billing (admin only) ✅
+│   │   │   │           └── page.tsx
+│   │   │   └── onboarding/            # 3-step onboarding wizard ✅
+│   │   │       ├── page.tsx           # Step orchestrator (already-onboarded redirect)
+│   │   │       ├── step-business.tsx  # Step 1: business name + phone
+│   │   │       ├── step-address.tsx   # Step 2: default sender address + city
+│   │   │       └── step-done.tsx      # Step 3: success + CTA → /compare
+│   │   └── api/                       # Next.js API Routes
+│   │       ├── carriers/              # Carrier CRUD + comparison ✅
+│   │       │   ├── route.ts           # GET list, POST create
+│   │       │   ├── [id]/route.ts      # GET, PUT, DELETE
+│   │       │   ├── [id]/zones/route.ts           # GET, POST zones
+│   │       │   ├── [id]/zones/[zoneId]/route.ts  # DELETE zone
+│   │       │   ├── [id]/zones/[zoneId]/pricing/route.ts          # GET, POST pricing
+│   │       │   ├── [id]/zones/[zoneId]/pricing/[pricingId]/route.ts  # DELETE pricing
+│   │       │   └── compare/route.ts   # POST comparison engine (rate limited)
+│   │       ├── analytics/             # Analytics ✅
+│   │       │   ├── summary/route.ts   # GET KPI cards
+│   │       │   └── charts/route.ts    # GET time-series + carrier breakdown
+│   │       ├── shipments/             # Booking ✅
+│   │       │   ├── route.ts           # POST book, GET list
+│   │       │   ├── [id]/route.ts      # GET single
+│   │       │   └── export/route.ts    # GET CSV download
+│   │       ├── commissions/
+│   │       │   └── export/route.ts    # GET CSV download (admin) ✅
+│   │       ├── billing/
+│   │       │   └── invoices/route.ts  # POST create Stripe invoice, GET list (admin) ✅
+│   │       ├── cron/tracking/route.ts # Tracking poller (daily on Vercel Hobby) ✅
+│   │       ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
+│   │       │   ├── v1/shipping/shipments/create/route.ts
+│   │       │   └── v1/tracking/shipments/track/route.ts
+│   │       ├── users/me/route.ts      # GET + PATCH user profile ✅
+│   │       ├── feedback/route.ts      # POST submit feedback (auth + Zod) ✅
+│   │       └── webhooks/
+│   │           ├── clerk/route.ts     # Clerk user sync ✅
+│   │           └── stripe/route.ts    # Stripe invoice.paid → mark commissions paid ✅
 │   ├── components/
 │   │   ├── ui/                        # shadcn/ui primitives (16 components) ✅
 │   │   ├── carriers/                  # Carrier admin UI ✅
@@ -282,7 +294,7 @@ wassalha/
 │   │   │   ├── carriers.ts            # Carrier CRUD ✅
 │   │   │   ├── comparison.ts          # Ranking algorithm ✅
 │   │   │   ├── bookings.ts            # createBooking, listShipments ✅
-│   │   │   ├── commission.ts          # calculateCommission (dual-rate) ✅
+│   │   │   ├── commission.ts          # calculateCommission (dual-rate: 10% + 1.5% COD) ✅
 │   │   │   ├── tracking.ts            # pollActiveShipments, getTrackingEvents ✅
 │   │   │   ├── analytics.ts           # getAnalyticsSummary, getAnalyticsCharts ✅
 │   │   │   ├── billing.ts             # getRetailersBillingOverview, createRetailerInvoice ✅
@@ -314,9 +326,12 @@ wassalha/
 │   └── test-setup.ts                  # Vitest + @testing-library/jest-dom setup
 ├── docs/plans/                        # Implementation plans + progress
 ├── docs/mds/                          # Strategic docs (charter, stakeholder register)
+├── e2e/                               # Playwright E2E specs (5 flow specs) ✅
+├── lighthouserc.js                    # Lighthouse CI — tests / only (static landing page)
+├── playwright.config.ts
 ├── drizzle.config.ts
 ├── vitest.config.ts
-├── next.config.ts
+├── next.config.ts                     # CSP headers (manual, dev disabled), cron schedule
 ├── tsconfig.json
 ├── components.json                    # shadcn/ui config
 ├── .env.example
@@ -493,16 +508,21 @@ docker-compose down         # Stop all
 ### Full-Stack — Next.js 15 App Router
 
 ```
-middleware.ts       → Clerk auth — protects /dashboard and /admin routes
-app/                → Pages (RSC by default, client where needed)
-app/api/            → REST API routes (thin controllers → services)
-lib/services/       → Business logic (comparison, booking, tracking)
-lib/db/schema/      → Drizzle ORM table definitions
-lib/carriers/       → Unified carrier adapter pattern
-lib/supabase/       → Supabase client (Realtime subscriptions)
-lib/validations/    → Zod schemas (shared API + form validation)
-components/         → Reusable React components (shadcn/ui based)
-hooks/              → Custom hooks (TanStack Query, Supabase subscriptions)
+middleware.ts            → Clerk auth — protects /dashboard and /admin routes
+app/layout.tsx           → Minimal HTML shell only — no providers, no Clerk JS
+app/page.tsx             → Static landing page — pre-renders at build time (no auth dependency)
+app/(app)/layout.tsx     → App shell — ClerkProvider + TanStack Query + Toaster + SpeedInsights
+app/(app)/(dashboard)/   → Protected dashboard routes
+app/(app)/(auth)/        → Clerk hosted sign-in / sign-up pages
+app/(app)/onboarding/    → 3-step onboarding wizard
+app/api/                 → REST API routes (thin controllers → services)
+lib/services/            → Business logic (comparison, booking, tracking, etc.)
+lib/db/schema/           → Drizzle ORM table definitions
+lib/carriers/            → Unified carrier adapter pattern
+lib/supabase/            → Supabase client (Realtime subscriptions)
+lib/validations/         → Zod schemas (shared API + form validation)
+components/              → Reusable React components (shadcn/ui based)
+hooks/                   → Custom hooks (TanStack Query, Supabase subscriptions)
 ```
 
 **Key constraints:**
