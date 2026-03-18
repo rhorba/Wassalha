@@ -10,7 +10,7 @@ function PostHogInit({ children }: { children: React.ReactNode }) {
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
     if (key) {
       posthog.init(key, {
-        api_host: 'https://app.posthog.com',
+        api_host: 'https://eu.i.posthog.com',
         capture_pageview: true,
         capture_pageleave: true,
         persistence: 'localStorage',
