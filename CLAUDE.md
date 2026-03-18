@@ -22,7 +22,7 @@ Focus: Type-safety, performance, bilingual support (French/Darija), RBAC securit
 - **Maps**: Google Maps API (address autocomplete, Morocco-restricted) + Mapbox (Phase 5 route visualization).
 - **Payments**: ⏳ Deferred — Stripe removed (not available for Morocco merchants). PayGate Africa is the planned replacement but requires vetting (Morocco merchant support, REST API, webhook events, sandbox). Beta uses manual invoice confirmation. Do NOT implement payment processor until researched.
 - **Email**: Resend (Phase 4 — booking confirmation). Lazy-initialized, skipped if key missing.
-- **Notifications**: WhatsApp Business API (Phase 7 — recipient SMS). Wired in `bookings.ts`, skips if credentials missing. ⬜ `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` not yet set in Vercel — requires Meta Business API access.
+- **Notifications**: WhatsApp Business API (Phase 7 — recipient SMS). Wired in `bookings.ts`, skips if credentials missing. ⏭ Skipped for beta — Meta account restricted from creating Business Portfolio (appeal submitted 2026-03-18). Revisit when Meta resolves restriction.
 - **Deployment**: Vercel (app — https://wassalha.vercel.app). Connected to `main` branch.
 - **CI/CD**: GitHub Actions — lint + tsc + vitest + build on every push.
 - **Monitoring**: Sentry (`@sentry/nextjs` — Phase 8 ✅) + PostHog (`posthog-js` — Phase 8 ✅). Both live in production.

@@ -451,9 +451,9 @@ POST   /api/feedback                 Submit in-app feedback (auth + Zod-validate
 | `CTM_API_URL` / `CTM_API_KEY` | ⏳ Deferred | CTM Messagerie — requires carrier partnership + contract |
 | `MAROCOLIS_API_URL` / `MAROCOLIS_CLIENT_ID` / `MAROCOLIS_CLIENT_SECRET` | ⏳ Deferred | Marocolis — requires carrier partnership + contract |
 | `SENDEX_API_URL` / `SENDEX_API_TOKEN` | ⏳ Deferred | Sendex — requires carrier partnership + contract |
-| `WHATSAPP_API_TOKEN` | W7+ | WhatsApp Business API token (Meta) |
-| `WHATSAPP_PHONE_ID` | W7+ | WhatsApp phone number ID |
-| `WHATSAPP_TEMPLATE_NAME` | W7+ | Approved message template name |
+| `WHATSAPP_API_TOKEN` | ⏭ Skipped | Meta account restricted from creating Business Portfolio. Appeal submitted. Code skips gracefully if missing. |
+| `WHATSAPP_PHONE_ID` | ⏭ Skipped | Same as above |
+| `WHATSAPP_TEMPLATE_NAME` | ⏭ Skipped | Same as above |
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ W5 | Supabase project URL (real-time tracking) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ W5 | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ W5 | Supabase service role key |

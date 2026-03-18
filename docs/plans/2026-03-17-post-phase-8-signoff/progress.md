@@ -7,7 +7,7 @@
 
 | # | Item | Priority |
 |---|------|----------|
-| 1 | Set `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` in Vercel | 🟡 Optional |
+| 1 | Set `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` in Vercel | ⏭ Skipped — Meta account restricted from creating Business Portfolio. Appeal submitted. Code already skips gracefully if credentials missing. |
 
 ## Deferred — Requires Further Research
 
@@ -123,5 +123,5 @@ Legend: ✅ confirmed done during development | ⬜ still to do
 - ✅ `RESEND_API_KEY` — set in Vercel. Booking confirmation emails enabled.
 - ✅ `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` + `SUPABASE_SERVICE_ROLE_KEY` — set in Phase 5
 - ✅ `CRON_SECRET` — set in Phase 5
-- ⬜ `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` — recipient SMS on booking (code is wired, just needs credentials)
+- ⏭ `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` — skipped. Meta account restricted from creating Business Portfolio (advertising restriction). Appeal submitted 2026-03-18. Code skips gracefully if credentials missing — no impact on beta.
 - ⬜ Carrier API keys (Amana, CTM, Marocolis, Sendex) — Aramex mock works locally without keys
