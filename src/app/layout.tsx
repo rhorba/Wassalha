@@ -1,8 +1,4 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { Providers } from "./providers";
-import { Toaster } from "@/components/ui/sonner";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,14 +12,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider afterSignInUrl="/dashboard" afterSignUpUrl="/dashboard">
-      <html lang="fr">
-        <body>
-          <Providers>{children}</Providers>
-          <Toaster richColors />
-          <SpeedInsights />
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="fr">
+      <head>
+        <link rel="preconnect" href="https://accounts.clerk.dev" />
+        <link rel="preconnect" href="https://clerk.accounts.dev" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://eu.i.posthog.com" />
+      </head>
+      <body>{children}</body>
+    </html>
   );
 }

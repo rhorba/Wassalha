@@ -1,9 +1,9 @@
 module.exports = {
   ci: {
     collect: {
-      url: ['http://localhost:3000/', 'http://localhost:3000/dashboard'],
+      url: ['http://localhost:3000/'],
       startServerCommand: 'pnpm start',
-      startServerReadyPattern: 'Ready on',
+      startServerReadyPattern: 'Ready in',
       numberOfRuns: 2,
     },
     assert: {

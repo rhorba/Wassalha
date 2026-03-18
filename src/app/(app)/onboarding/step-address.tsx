@@ -38,8 +38,9 @@ export function StepAddress({ onNext }: StepAddressProps) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1">
-          <Label>Adresse complète</Label>
+          <Label htmlFor="defaultSenderAddress">Adresse complète</Label>
           <AddressAutocomplete
+            id="defaultSenderAddress"
             value={address}
             placeholder="12 Rue Ibn Battouta, Casablanca"
             onChange={(val) => {

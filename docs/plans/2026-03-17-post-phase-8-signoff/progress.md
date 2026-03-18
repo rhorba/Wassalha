@@ -1,7 +1,21 @@
 # Execution Progress
 
 **Plan:** `docs/plans/2026-03-17-post-phase-8-signoff/plan.md`
-**Last updated:** 2026-03-17
+**Last updated:** 2026-03-18 (S7 ✅, Priority 7 GitHub CI secrets ✅, RESEND_API_KEY ✅, Lighthouse perf fix ✅)
+
+## Next Session — Remaining Work
+
+| # | Item | Priority |
+|---|------|----------|
+| 1 | Set `STRIPE_SECRET_KEY` in Vercel (dashboard.stripe.com → Test mode → API Keys) | 🔴 High |
+| 2 | Set `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` in Vercel (same page) | 🔴 High |
+| 3 | Register Stripe webhook → production URL → subscribe to `invoice.paid` | 🔴 High |
+| 4 | Set `STRIPE_WEBHOOK_SECRET` in Vercel (from webhook signing secret) | 🔴 High |
+| 5 | Update Stripe webhook URL to `https://wassalha.vercel.app/api/webhooks/stripe` | 🔴 High |
+| 6 | Run S10: retailer with 0 MAD → "Générer facture" button disabled with tooltip | 🔴 High |
+| 7 | Run S11: admin → `/admin/billing` → "Générer facture" → toast + invoice in history | 🔴 High |
+| 8 | Set `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` in Vercel | 🟢 Optional |
+| 9 | Set carrier API keys (Amana, CTM, Marocolis, Sendex) in Vercel | 🟢 Optional |
 
 ## Status
 
@@ -31,7 +45,7 @@ Legend: ✅ confirmed done during development | ⬜ still to do
 - ✅ `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` — set in Phase 1
 - ✅ `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` — set in Phase 2 (address autocomplete worked)
 - ✅ Clerk webhook registered + `CLERK_WEBHOOK_SECRET` set — resolved Phase 1 blocker
-- ⬜ **Update Clerk webhook URL to production domain after Vercel deploy** (currently points to ngrok/localhost)
+- ✅ **Update Clerk webhook URL to production domain** → https://wassalha.vercel.app/api/webhooks/clerk
 
 ### Priority 2 — Stripe billing (P6 S11 smoke test)
 
@@ -46,46 +60,52 @@ Legend: ✅ confirmed done during development | ⬜ still to do
 - ⬜ **Run P6 S11**: sign in as admin → `/admin/billing` → "Générer facture" → verify toast + invoice appears in history
 - ⬜ **Run P6 S10**: find/create a retailer with 0 MAD pending → verify "Générer facture" button is disabled with tooltip
 
-### Priority 3 — E2E tests (Playwright)
+### Priority 3 — E2E tests (Playwright) ✅ COMPLETE
 
-- ⬜ Create Clerk test user — **retailer**:
-  - Clerk dashboard → Users → Create user
-  - Email: `retailer+clerk_test@yourdomain.com` (must end in `+clerk_test`)
-  - No `publicMetadata.role`
-- ⬜ Create Clerk test user — **admin**:
-  - Same, email: `admin+clerk_test@yourdomain.com`
-  - Public metadata: `{"role":"admin"}`
-- ⬜ Set in `.env.local`: `E2E_RETAILER_EMAIL` + `E2E_ADMIN_EMAIL`
-- ⬜ Add both as GitHub repo secrets (Settings → Secrets → Actions → New repository secret)
-- ⬜ Run `pnpm test:e2e` and verify all 5 specs pass
+- ✅ Create Clerk test users (retailer + admin with `+clerk_test` suffix)
+- ✅ Set `E2E_RETAILER_EMAIL` + `E2E_RETAILER_PASSWORD` + `E2E_ADMIN_EMAIL` + `E2E_ADMIN_PASSWORD` in `.env.local`
+- ✅ Add E2E vars as GitHub repo secrets (Settings → Secrets → Actions)
+- ✅ `pnpm test:e2e` — **7/7 passing**
 
-### Priority 4 — Deploy to Vercel
+**Bugs fixed during E2E:**
+- CSP blocked Clerk FAPI in dev → disabled CSP in dev mode (`next.config.ts`)
+- Playwright timeout 30s → 60s (`playwright.config.ts`)
+- `CityAutocomplete` + `AddressAutocomplete` non-fallback inputs didn't propagate `fill()` → added `onChange`
+- `AddressAutocomplete` missing `id` prop → added
+- Compare form labels were English → translated to French
+- `RetailerBillingTable` missing `data-testid="billing-table"` → added
+- `StepAddress` label had no `htmlFor` → added
+- All E2E test selectors updated to match actual UI
 
-- ⬜ Run `vercel --prod`
-- ⬜ Set all env vars in Vercel dashboard → project → Settings → Environment Variables
-- ⬜ Update Clerk webhook URL to production domain
-- ⬜ Update Stripe webhook URL to production domain (or add a new endpoint)
+### Priority 4 — Deploy to Vercel ✅ COMPLETE
 
-### Priority 5 — Phase 8 smoke tests (best run after deploy)
+- ✅ Run `vercel --prod` — deployed to https://wassalha.vercel.app
+- ✅ Set all env vars in Vercel dashboard (imported from .env.local)
+- ✅ Update Clerk webhook URL to https://wassalha.vercel.app/api/webhooks/clerk
+- ✅ GitHub repo connected (rhorba/Wassalha → main branch auto-deploy)
+- ✅ CSP fixed — replaced next-safe with manual header (next-safe stripped wildcard domains)
+- ✅ Cron downgraded to daily (0 0 * * *) for Vercel Hobby plan
+- ✅ Git committer email fixed (mohamedd.rhorba@gmail.com)
+- ⬜ Update Stripe webhook URL to production domain (after Stripe is configured)
 
-- ⬜ **S1**: DevTools → Network → Response Headers → verify `Content-Security-Policy` present
-- ⬜ **S2**: `/dashboard` → feedback button visible bottom-right → click → popover opens
-- ⬜ **S3**: Feedback form → type 5 chars → submit → validation error shown
-- ⬜ **S4**: Feedback form → type valid message → submit → toast "Feedback sent!"
-- ⬜ **S8**: Browser console → inject script from unknown domain → CSP blocks it
+### Priority 5 — Phase 8 smoke tests (best run after deploy) ✅ COMPLETE (4/4 testable)
 
-### Priority 6 — Monitoring (before opening to beta users)
+- ✅ **S1**: CSP + X-Frame-Options + HSTS + X-Content-Type-Options all confirmed via `curl -sI` on production
+- ✅ **S2**: Feedback button visible bottom-right on `/dashboard` → popover with form opens on click
+- ✅ **S3**: Feedback form → 5 chars → inline validation error shown
+- ✅ **S4**: Feedback form → valid message → "Merci pour votre retour !" toast → popover closes. PostHog `ERR_BLOCKED_BY_CLIENT` errors visible in console — caused by ad blocker, not a bug.
+- ✅ **S5**: Sentry active in production — 6 sessions tracked, 2 releases with source maps uploaded, POST to ingest.de.sentry.io returned 200 OK. DSN hardcoded in sentry.client/server/edge.config.ts after env var inlining issue with Vercel build pipeline.
+- ✅ **S6**: Upstash Redis configured — 20 req/min sliding window on `/api/carriers/compare`. Requests 1–20 → 401, request 21+ → 429. Rate limit check moved before auth so unauthenticated flood is also blocked. Commits: `96ca3e5`, `7e7ea4f`.
+- ✅ **S7**: Lighthouse CI run locally. All assertions are `warn` (not `error`) — lhci exited successfully. Scores: `/` perf 0.52, LCP 5639ms; `/dashboard` redirected to sign-in (Clerk, unauthenticated) perf 0.44, LCP 9532ms. Low scores expected locally due to Sentry/PostHog/Clerk/Google Maps scripts + local machine overhead. Reports uploaded to temporary public storage.
+  - **Perf fix applied (2026-03-18)**: Root cause — `ClerkProvider` + PostHog/TanStack providers loaded on every page including the static landing page, blocking LCP with cross-origin Clerk JS. Fix: stripped root layout to minimal HTML shell; created `(app)/layout.tsx` with ClerkProvider + Providers wrapping only auth/dashboard/onboarding routes. Landing page `/` now pre-renders as fully static (○) with no cross-origin blocking scripts. `lighthouserc.js` updated to test only `/` (removed `/dashboard` which redirects to Clerk-hosted sign-in — uncontrollable). Expected LCP improvement: ~5.6s → sub-2s.
+- ✅ **S8**: Browser console script injection → CSP blocked with "Loading the script 'https://evil.example.com/x.js' violates the following Content Security Policy directive" — confirmed blocked
 
-- ⬜ **Sentry** — not configured yet:
-  - sentry.io → Create project (Next.js) → copy DSN → `NEXT_PUBLIC_SENTRY_DSN`
-  - sentry.io → Settings → Auth Tokens → Create → `SENTRY_AUTH_TOKEN`
-  - Set `SENTRY_ORG` (your org slug from sentry.io URL) + `SENTRY_PROJECT` (e.g. `wassalha`)
-- ⬜ **PostHog** — not configured yet:
-  - posthog.com → Create project → copy API key → `NEXT_PUBLIC_POSTHOG_KEY`
-- ⬜ **Upstash** (rate limiting) — not configured yet:
-  - upstash.com → Create database → REST API tab → copy URL + token
-  - Set `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
-  - After setting, re-run **P8 S6**: submit compare form 21× quickly → verify 429 response
+### Priority 6 — Monitoring ✅ COMPLETE
+
+- ✅ **Sentry** — live in production. DSN hardcoded in `sentry.client/server/edge.config.ts` (env var inlining issue with Vercel). 6 sessions tracked, POST to `ingest.de.sentry.io` returns 200 OK.
+- ✅ **PostHog** — live in production. EU region (`eu.i.posthog.com`). Key `NEXT_PUBLIC_POSTHOG_KEY` set in Vercel. CSP updated to allow `eu-assets.i.posthog.com` + `eu.i.posthog.com`. Live Events confirmed flowing in PostHog dashboard.
+  - **Bug fixed**: `api_host` was `app.posthog.com` (deprecated global) → changed to `eu.i.posthog.com`. Old host returned JSON error body for `config.js` causing MIME type rejection.
+- ✅ **Upstash** (rate limiting) — Redis database `wassalha-ratelimit` created (EU-West-1). `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` set in Vercel. S6 confirmed: request 21+ returns 429.
 
 ### Priority 7 — GitHub CI secrets
 
@@ -93,15 +113,15 @@ Legend: ✅ confirmed done during development | ⬜ still to do
 - ✅ `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` — added Phase 1
 - ✅ `CLERK_SECRET_KEY` — added Phase 1
 - ✅ `CLERK_WEBHOOK_SECRET` — added Phase 1
-- ⬜ `E2E_RETAILER_EMAIL` — needs Clerk test user created first
-- ⬜ `E2E_ADMIN_EMAIL` — needs Clerk test user created first
-- ⬜ `SENTRY_AUTH_TOKEN` — needs Sentry project created first
-- ⬜ `SENTRY_ORG` — needs Sentry project created first
-- ⬜ `SENTRY_PROJECT` — needs Sentry project created first
+- ✅ `E2E_RETAILER_EMAIL` + `E2E_RETAILER_PASSWORD` — added to GitHub secrets
+- ✅ `E2E_ADMIN_EMAIL` + `E2E_ADMIN_PASSWORD` — added to GitHub secrets
+- ✅ `SENTRY_AUTH_TOKEN` — added to GitHub secrets (token rotated after accidental exposure)
+- ✅ `SENTRY_ORG` — `me-uk` added to GitHub secrets
+- ✅ `SENTRY_PROJECT` — `javascript-nextjs` added to GitHub secrets
 
 ### Optional (for full feature parity)
 
-- ⬜ `RESEND_API_KEY` (resend.com → API Keys → free tier) — booking confirmation emails
+- ✅ `RESEND_API_KEY` — set in Vercel. Booking confirmation emails enabled.
 - ✅ `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` + `SUPABASE_SERVICE_ROLE_KEY` — set in Phase 5
 - ✅ `CRON_SECRET` — set in Phase 5
 - ⬜ `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` — recipient SMS on booking (code is wired, just needs credentials)
