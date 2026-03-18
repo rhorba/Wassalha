@@ -7,15 +7,14 @@
 
 | # | Item | Priority |
 |---|------|----------|
-| 1 | Set `STRIPE_SECRET_KEY` in Vercel (dashboard.stripe.com → Test mode → API Keys) | 🔴 High |
-| 2 | Set `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` in Vercel (same page) | 🔴 High |
-| 3 | Register Stripe webhook → production URL → subscribe to `invoice.paid` | 🔴 High |
-| 4 | Set `STRIPE_WEBHOOK_SECRET` in Vercel (from webhook signing secret) | 🔴 High |
-| 5 | Update Stripe webhook URL to `https://wassalha.vercel.app/api/webhooks/stripe` | 🔴 High |
-| 6 | Run S10: retailer with 0 MAD → "Générer facture" button disabled with tooltip | 🔴 High |
-| 7 | Run S11: admin → `/admin/billing` → "Générer facture" → toast + invoice in history | 🔴 High |
-| 8 | Set `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` in Vercel | 🟢 Optional |
-| 9 | Set carrier API keys (Amana, CTM, Marocolis, Sendex) in Vercel | 🟢 Optional |
+| 1 | Set `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` in Vercel | 🟡 Optional |
+
+## Deferred — Requires Further Research
+
+| # | Item | Reason |
+|---|------|--------|
+| — | **Stripe → PayGate Africa migration** (payment collection) | Stripe not supported in Morocco. PayGate Africa is the candidate but needs vetting: confirm Morocco merchant support, REST API for invoices/payment links, webhook events, sandbox mode. Do not implement until researched. |
+| — | **Carrier API keys** (Amana, CTM, Marocolis, Sendex) | Requires contacting each carrier for API credentials + contracts. Aramex mock works for beta. Real integrations deferred until carrier partnerships confirmed. |
 
 ## Status
 

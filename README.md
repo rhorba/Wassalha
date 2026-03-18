@@ -71,7 +71,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | **Auth** | Clerk (hosted UI + publicMetadata role) |
 | **Real-time** | Supabase Realtime (postgres_changes) + 10s polling fallback |
 | **Maps** | Google Maps API (address autocomplete, Morocco-restricted) |
-| **Payments** | Stripe (commission billing invoices) |
+| **Payments** | ⏳ Deferred — Stripe removed (not available in Morocco). PayGate Africa planned after vetting. Manual invoice confirmation used for beta. |
 | **Email** | Resend (booking confirmation — skipped if key missing) |
 | **Notifications** | WhatsApp Business API (wired, skips if credentials missing) |
 | **Rate limiting** | Upstash Redis (`@upstash/ratelimit` — 20 req/min on compare) |
@@ -446,11 +446,11 @@ POST   /api/feedback                 Submit in-app feedback (auth + Zod-validate
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | ✅ Now | Google Maps API key (address autocomplete) |
 | `RESEND_API_KEY` | ✅ W4 | Resend email API key — booking confirmation emails |
 | `RESEND_FROM_EMAIL` | ✅ W4 | Sender address (use `onboarding@resend.dev` until domain verified) |
-| `AMANA_API_URL` / `AMANA_API_KEY` / `AMANA_ACCOUNT_ID` | ✅ W4 | Amana Maroc carrier credentials |
-| `ARAMEX_API_URL` / `ARAMEX_USERNAME` / `ARAMEX_PASSWORD` / `ARAMEX_ACCOUNT_NUMBER` / `ARAMEX_ACCOUNT_PIN` | ✅ W4 | Aramex carrier credentials |
-| `CTM_API_URL` / `CTM_API_KEY` | ✅ W4 | CTM Messagerie carrier credentials |
-| `MAROCOLIS_API_URL` / `MAROCOLIS_CLIENT_ID` / `MAROCOLIS_CLIENT_SECRET` | ✅ W4 | Marocolis carrier credentials |
-| `SENDEX_API_URL` / `SENDEX_API_TOKEN` | ✅ W4 | Sendex carrier credentials |
+| `AMANA_API_URL` / `AMANA_API_KEY` / `AMANA_ACCOUNT_ID` | ⏳ Deferred | Amana Maroc — requires carrier partnership + contract |
+| `ARAMEX_API_URL` / `ARAMEX_USERNAME` / `ARAMEX_PASSWORD` / `ARAMEX_ACCOUNT_NUMBER` / `ARAMEX_ACCOUNT_PIN` | ⏳ Deferred | Aramex — mock used for beta (`/api/mock-aramex`). Real credentials deferred. |
+| `CTM_API_URL` / `CTM_API_KEY` | ⏳ Deferred | CTM Messagerie — requires carrier partnership + contract |
+| `MAROCOLIS_API_URL` / `MAROCOLIS_CLIENT_ID` / `MAROCOLIS_CLIENT_SECRET` | ⏳ Deferred | Marocolis — requires carrier partnership + contract |
+| `SENDEX_API_URL` / `SENDEX_API_TOKEN` | ⏳ Deferred | Sendex — requires carrier partnership + contract |
 | `WHATSAPP_API_TOKEN` | W7+ | WhatsApp Business API token (Meta) |
 | `WHATSAPP_PHONE_ID` | W7+ | WhatsApp phone number ID |
 | `WHATSAPP_TEMPLATE_NAME` | W7+ | Approved message template name |
@@ -459,9 +459,9 @@ POST   /api/feedback                 Submit in-app feedback (auth + Zod-validate
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ W5 | Supabase service role key |
 | `CRON_SECRET` | ✅ W5 | Bearer token protecting `/api/cron/tracking` — generate with `openssl rand -hex 32` |
 | `NEXT_PUBLIC_MAPBOX_TOKEN` | W6+ | Mapbox access token (route visualization) |
-| `STRIPE_SECRET_KEY` | ✅ W6 | Stripe secret (commission billing invoices) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ✅ W6 | Stripe public key |
-| `STRIPE_WEBHOOK_SECRET` | ✅ W6 | Stripe webhook signing secret (invoice.paid event) |
+| `STRIPE_SECRET_KEY` | ⏳ Deferred | Stripe not supported in Morocco — migration to PayGate Africa planned |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ⏳ Deferred | Same as above |
+| `STRIPE_WEBHOOK_SECRET` | ⏳ Deferred | Same as above |
 | `NEXT_PUBLIC_POSTHOG_KEY` | W6+ | PostHog analytics key |
 | `NEXT_PUBLIC_SENTRY_DSN` | W8 | Sentry error tracking DSN — get from sentry.io project settings → Client Keys |
 | `SENTRY_AUTH_TOKEN` | W8 CI | Source map upload — get from sentry.io → Settings → Auth Tokens |
@@ -656,6 +656,39 @@ Steps documented in `docs/plans/2026-03-17-post-phase-8-signoff/plan.md`.
 |---|----------|-------------|
 | S10 | "Générer facture" disabled when retailer has 0 MAD pending | Create a retailer with no commissions |
 | S11 | Generate Stripe invoice → toast + row disappears + invoice history | Set `STRIPE_SECRET_KEY=sk_test_...` from Stripe dashboard |
+
+---
+
+## Deferred — Future Work
+
+These items require research or external partnerships before implementation. Do not implement until the prerequisites are met.
+
+### Payment Collection — PayGate Africa (replaces Stripe)
+
+**Status:** ⏳ Deferred — research required
+
+Stripe is not available for Morocco-based merchants. The current billing UI (`/admin/billing`) has the Stripe integration stubbed out. For the beta, invoice confirmation is handled manually by the admin.
+
+**Planned migration:** Stripe → PayGate Africa (or CMI if PayGate Africa doesn't support Morocco merchants)
+
+**Prerequisites before implementing:**
+- Confirm PayGate Africa accepts Morocco as merchant country
+- Confirm REST API supports invoice/payment link creation
+- Identify webhook event equivalent to `invoice.paid`
+- Confirm sandbox/test mode availability
+- Files to change: `src/lib/services/billing.ts`, `src/app/api/billing/invoices/route.ts`, `src/app/api/webhooks/stripe/route.ts`
+
+### Carrier API Integrations (Amana, CTM, Marocolis, Sendex)
+
+**Status:** ⏳ Deferred — carrier partnerships required
+
+The adapter pattern is fully implemented (`src/lib/carriers/adapters/`). All 4 carriers have stubs that throw `SERVICE_UNAVAILABLE`. Aramex has a mock for local development. Real integrations require:
+- Signed API contracts with each carrier
+- Live credentials (API keys, account IDs)
+- Testing against carrier sandbox environments
+- Full `createShipment()` + `getTrackingStatus()` implementation per adapter
+
+No code changes needed until credentials are obtained — just fill in the adapter methods and set env vars.
 
 ---
 

@@ -20,9 +20,9 @@ Focus: Type-safety, performance, bilingual support (French/Darija), RBAC securit
 - **Auth**: Clerk (hosted UI + publicMetadata role + JWT template). NextAuth dropped.
 - **Real-time**: Supabase Realtime (Phase 5 — implemented). postgres_changes for tracking_events INSERT + polling fallback for shipments UPDATE.
 - **Maps**: Google Maps API (address autocomplete, Morocco-restricted) + Mapbox (Phase 5 route visualization).
-- **Payments**: Stripe (Phase 6 — commission billing invoices). Live — needs `STRIPE_SECRET_KEY` set.
+- **Payments**: ⏳ Deferred — Stripe removed (not available for Morocco merchants). PayGate Africa is the planned replacement but requires vetting (Morocco merchant support, REST API, webhook events, sandbox). Beta uses manual invoice confirmation. Do NOT implement payment processor until researched.
 - **Email**: Resend (Phase 4 — booking confirmation). Lazy-initialized, skipped if key missing.
-- **Notifications**: WhatsApp Business API (Phase 7 — recipient SMS). Wired in `bookings.ts`, skips if credentials missing.
+- **Notifications**: WhatsApp Business API (Phase 7 — recipient SMS). Wired in `bookings.ts`, skips if credentials missing. ⬜ `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID` not yet set in Vercel — requires Meta Business API access.
 - **Deployment**: Vercel (app — https://wassalha.vercel.app). Connected to `main` branch.
 - **CI/CD**: GitHub Actions — lint + tsc + vitest + build on every push.
 - **Monitoring**: Sentry (`@sentry/nextjs` — Phase 8 ✅) + PostHog (`posthog-js` — Phase 8 ✅). Both live in production.
@@ -364,7 +364,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIza...
 RESEND_API_KEY=re_...
 RESEND_FROM_EMAIL=Wassalha <onboarding@resend.dev>
 
-# Carrier APIs (all optional — booking returns 502 if missing)
+# Carrier APIs (⏳ DEFERRED — requires carrier partnership contracts. Aramex mock used for beta.)
 AMANA_API_URL=https://api.amana.ma
 AMANA_API_KEY=
 AMANA_ACCOUNT_ID=
