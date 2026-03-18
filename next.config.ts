@@ -5,7 +5,7 @@ const isDev = process.env.NODE_ENV !== 'production'
 
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://accounts.clerk.dev https://*.clerk.accounts.dev https://js.stripe.com https://eu-assets.i.posthog.com",
+  "script-src 'self' 'unsafe-inline' https://accounts.clerk.dev https://*.clerk.accounts.dev https://js.stripe.com https://eu-assets.i.posthog.com https://maps.googleapis.com https://maps.gstatic.com",
   "connect-src 'self' https://*.clerk.dev https://*.clerk.com https://*.clerk.accounts.dev https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://eu.i.posthog.com https://eu-assets.i.posthog.com https://*.sentry.io https://maps.googleapis.com",
   "frame-src 'self' https://accounts.clerk.dev https://*.clerk.accounts.dev https://js.stripe.com",
   "img-src 'self' data: blob: https://maps.googleapis.com https://maps.gstatic.com https://img.clerk.com",
