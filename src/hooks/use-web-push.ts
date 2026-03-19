@@ -10,6 +10,13 @@ interface UseWebPush {
   unsubscribe: () => Promise<void>;
 }
 
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
+
 export function useWebPush(): UseWebPush {
   const [supported,  setSupported]  = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
@@ -38,7 +45,8 @@ export function useWebPush(): UseWebPush {
   }, []);
 
   const subscribe = useCallback(async () => {
-    const reg  = await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.register("/sw.js");
+    const reg  = await navigator.serviceWorker.ready;
     const perm = await Notification.requestPermission();
     setPermission(perm);
     if (perm !== "granted") return;
@@ -49,7 +57,7 @@ export function useWebPush(): UseWebPush {
 
     const newSub = await reg.pushManager.subscribe({
       userVisibleOnly:      true,
-      applicationServerKey: key,
+      applicationServerKey: urlBase64ToUint8Array(key),
     });
 
     await fetch("/api/push/subscribe", {

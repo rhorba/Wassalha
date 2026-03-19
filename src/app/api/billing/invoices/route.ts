@@ -44,6 +44,12 @@ export async function POST(req: Request) {
     if (err instanceof Error && err.message === "NO_PENDING_COMMISSIONS") {
       return NextResponse.json({ error: "No pending commissions" }, { status: 400 });
     }
+    if (
+      (err instanceof Error && err.message === "STRIPE_SECRET_KEY is not set") ||
+      (err as { type?: string })?.type === "StripeAuthenticationError"
+    ) {
+      return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });
+    }
     console.error("[POST /api/billing/invoices]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
