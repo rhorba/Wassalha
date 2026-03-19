@@ -19,6 +19,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const { userId, sessionClaims } = await auth();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
   if (role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

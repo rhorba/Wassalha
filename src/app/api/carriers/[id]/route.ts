@@ -23,6 +23,7 @@ export async function GET(_req: Request, { params }: Params) {
 export async function PUT(req: Request, { params }: Params) {
   const { id } = await params;
   const { userId, sessionClaims } = await auth();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
   if (role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -66,6 +67,7 @@ export async function PUT(req: Request, { params }: Params) {
 export async function DELETE(_req: Request, { params }: Params) {
   const { id } = await params;
   const { userId, sessionClaims } = await auth();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
   if (role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
