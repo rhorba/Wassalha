@@ -7,7 +7,7 @@ import { type Page } from '@playwright/test'
  * Must call page.goto('/') before calling this so Clerk is loaded.
  */
 export async function asRetailer(page: Page): Promise<void> {
-  await page.goto('/')
+  await page.goto('/sign-in')
   await clerk.signIn({
     page,
     signInParams: {
@@ -23,7 +23,7 @@ export async function asRetailer(page: Page): Promise<void> {
  * Must call page.goto('/') before calling this so Clerk is loaded.
  */
 export async function asAdmin(page: Page): Promise<void> {
-  await page.goto('/')
+  await page.goto('/sign-in')
   await clerk.signIn({
     page,
     signInParams: {
