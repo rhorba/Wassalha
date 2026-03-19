@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import { shipments, trackingEvents } from "@/lib/db/schema";
 import { getAdapter } from "@/lib/carriers/adapters";
 import type { TrackingEvent as AdapterEvent } from "@/lib/carriers/types";
-import { sendWebPushToUser } from "@/lib/notifications/web-push";
 
 const ACTIVE_STATUSES = ["confirmed", "picked_up", "in_transit"] as const;
 const MAX_AGE_DAYS    = 14;
