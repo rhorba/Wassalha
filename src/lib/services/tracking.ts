@@ -75,7 +75,7 @@ export async function pollActiveShipments(): Promise<{ processed: number; errors
           .set({ status: next, updatedAt: new Date() })
           .where(eq(shipments.id, shipment.id));
 
-        void sendWebPushToUser(shipment.userId, shipment.id, {
+        await sendWebPushToUser(shipment.userId, shipment.id, {
           title: "Colis mis à jour",
           body:  `Votre envoi est maintenant : ${next.replace("_", " ")}`,
         });
