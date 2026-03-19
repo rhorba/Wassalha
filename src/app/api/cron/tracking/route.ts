@@ -27,5 +27,5 @@ export async function GET(req: Request) {
     });
   }
 
-  return Response.json({ ok: true, processed, errors });
+  return Response.json({ ok: true, processed, errors, pushTasks: pushTasks.length });
 }
