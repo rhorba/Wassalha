@@ -55,9 +55,20 @@ function latestStatus(events: AdapterEvent[]) {
   return sorted[0]?.status;
 }
 
-export async function pollActiveShipments(): Promise<{ processed: number; errors: number }> {
-  const active = await getActiveShipments();
-  let errors   = 0;
+interface PushTask {
+  userId:     string;
+  shipmentId: string;
+  status:     string;
+}
+
+export async function pollActiveShipments(): Promise<{
+  processed:  number;
+  errors:     number;
+  pushTasks:  PushTask[];
+}> {
+  const active    = await getActiveShipments();
+  let errors      = 0;
+  const pushTasks: PushTask[] = [];
 
   for (const shipment of active) {
     if (!shipment.carrierTrackingNumber) continue;
@@ -75,10 +86,7 @@ export async function pollActiveShipments(): Promise<{ processed: number; errors
           .set({ status: next, updatedAt: new Date() })
           .where(eq(shipments.id, shipment.id));
 
-        await sendWebPushToUser(shipment.userId, shipment.id, {
-          title: "Colis mis à jour",
-          body:  `Votre envoi est maintenant : ${next.replace("_", " ")}`,
-        });
+        pushTasks.push({ userId: shipment.userId, shipmentId: shipment.id, status: next });
       }
     } catch (err) {
       console.error(`[tracking:poll] shipment=${shipment.id}`, err);
@@ -86,7 +94,7 @@ export async function pollActiveShipments(): Promise<{ processed: number; errors
     }
   }
 
-  return { processed: active.length, errors };
+  return { processed: active.length, errors, pushTasks };
 }
 
 export async function getTrackingEvents(shipmentId: string) {
