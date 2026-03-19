@@ -98,6 +98,7 @@ jobs:
       CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
       E2E_RETAILER_EMAIL: ${{ secrets.E2E_RETAILER_EMAIL }}
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      ARAMEX_API_URL: http://localhost:3000/api/mock-aramex
 
     steps:
       - name: Checkout

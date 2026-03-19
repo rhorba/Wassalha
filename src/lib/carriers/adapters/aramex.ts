@@ -21,6 +21,9 @@ export class AramexAdapter implements CarrierAdapter {
   private readonly accountPin    = process.env.ARAMEX_ACCOUNT_PIN    ?? "";
 
   async createShipment(input: CreateShipmentInput): Promise<CarrierShipmentResult> {
+    if (!this.baseUrl || !this.username) {
+      throw new CarrierApiError("SERVICE_UNAVAILABLE", "Aramex: credentials not configured");
+    }
     const res = await fetch(`${this.baseUrl}/v1/shipping/shipments/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
