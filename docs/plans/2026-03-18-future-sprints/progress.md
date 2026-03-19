@@ -67,7 +67,7 @@ VAPID keys generated and added to `.env.local`. Dev server running.
 | S7 | Toggle off → DB row deleted, bell reverts | ✅ PASS | Tested on Vercel. |
 | S8 | VAPID keys absent → bell hidden | ✅ PASS (by inference) | Keys present on Vercel = bell visible. Absent path covered by unit test U3 + `if (!res.ok) return` guard. |
 | S9 | Book a shipment → `notifications` row `channel=email` in DB | ✅ PASS | email=sent, whatsapp=failed (expected — no credentials) |
-| S10 | Cron poll with status change → `notifications` row `channel=web_push` | ⚠️ VERIFIED | All carrier stubs throw on tracking — no status change possible with test data. Wiring verified: tracking.ts:78 calls sendWebPushToUser on status diff. Will fire with real carrier contracts. |
+| S10 | Cron poll with status change → `notifications` row `channel=web_push` | ⏳ NEXT SESSION | Aramex mock wired + after() fix deployed. Blocked by DB connection exhaustion (pnpm dev running in background consumed pool). Pre-req: ensure pnpm dev is stopped, reset shipment 83970cd3 to confirmed, bell blue on Vercel. |
 
 ## Bugs Fixed During Smoke Testing (2026-03-19)
 1. `POST /api/billing/invoices` — `StripeAuthenticationError` not caught → 500. Fixed: returns 503 with "Stripe not configured".
