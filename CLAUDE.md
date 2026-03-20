@@ -97,7 +97,9 @@ E2E Playwright (5 flow specs), Lighthouse CI (perf ≥ 80), next-safe CSP header
 
 ### ✅ W9 — Notifications + Audit + Web Push (2026-03-18)
 
-`notifications` table (email/whatsapp/web_push log per shipment), `audit_logs` table (admin action trail: carrier CRUD, invoice generation, role changes), `push_subscriptions` table, Web Push service (VAPID), push API routes (`/api/push/subscribe`, `/api/push/vapid-public-key`), service worker (`public/sw.js`), `useWebPush` hook, `PushToggle` bell component in dashboard header, cron poller triggers push on status change. **Complete. 178 tests passing. Smoke tests S1–S10 deferred to next session (requires VAPID keys in .env.local).**
+`notifications` table (email/whatsapp/web_push log per shipment), `audit_logs` table (admin action trail: carrier CRUD, invoice generation, role changes), `push_subscriptions` table, Web Push service (VAPID), push API routes (`/api/push/subscribe`, `/api/push/vapid-public-key`), service worker (`public/sw.js`), `useWebPush` hook, `PushToggle` bell component in dashboard header, cron poller triggers push on status change. **Complete. 178 tests passing. All smoke tests S1–S10 passed (2026-03-20).**
+
+**Smoke test fixes (2026-03-20):** (1) `DATABASE_URL` switched to Supabase transaction-mode pooler (port 6543) — session mode exhausted under concurrent Vercel lambdas. (2) VAPID keys on Vercel had `=` padding — corrected via `vercel env add`. Added `toBase64url()` normalization in `web-push.ts`.
 
 ---
 
