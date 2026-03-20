@@ -25,13 +25,12 @@ export async function sendWebPushToUser(
   }
 
   // Lazily initialize VAPID — avoids module-level throw when keys are absent.
-  // Strip base64 padding: web-push requires unpadded base64url.
-  const vapidPublic  = process.env.VAPID_PUBLIC_KEY.replace(/=/g, "");
-  const vapidPrivate = process.env.VAPID_PRIVATE_KEY.replace(/=/g, "");
+  // Normalize to base64url: replace standard base64 chars, strip padding.
+  const toBase64url = (s: string) => s.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT ?? "mailto:admin@wassalha.ma",
-    vapidPublic,
-    vapidPrivate,
+    toBase64url(process.env.VAPID_PUBLIC_KEY),
+    toBase64url(process.env.VAPID_PRIVATE_KEY),
   );
 
   const subs = await db
