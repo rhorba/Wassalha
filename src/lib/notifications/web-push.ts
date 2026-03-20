@@ -24,11 +24,14 @@ export async function sendWebPushToUser(
     return;
   }
 
-  // Lazily initialize VAPID — avoids module-level throw when keys are absent
+  // Lazily initialize VAPID — avoids module-level throw when keys are absent.
+  // Strip base64 padding: web-push requires unpadded base64url.
+  const vapidPublic  = process.env.VAPID_PUBLIC_KEY.replace(/=/g, "");
+  const vapidPrivate = process.env.VAPID_PRIVATE_KEY.replace(/=/g, "");
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT ?? "mailto:admin@wassalha.ma",
-    process.env.VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY,
+    vapidPublic,
+    vapidPrivate,
   );
 
   const subs = await db
