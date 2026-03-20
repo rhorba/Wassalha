@@ -26,7 +26,7 @@ Wassalha is a B2B delivery aggregation platform built for Moroccan COD (Cash on 
 | W6 | Dashboard + Analytics | ✅ Done | KPI dashboard + charts + Stripe billing — 146 tests passing |
 | W7 | Landing Page + Onboarding | ✅ Done | Landing page (Darija + French) + 3-step onboarding + user profile API — 157 tests passing |
 | W8 | Testing + Launch Prep | ✅ Done | E2E Playwright (5 specs), Lighthouse CI, CSP headers, rate limiting, Sentry, PostHog, feedback widget — 164 tests passing. Perf fix: root layout restructured — landing page now fully static. |
-| W9 | Notifications + Audit + Web Push | ✅ Done | notifications table, audit_logs table, push_subscriptions table (migration 0008), web-push service, bell toggle UI, audit-logs admin page, cron trigger — 178 tests passing. |
+| W9 | Notifications + Audit + Web Push | ✅ Done | notifications table, audit_logs table, push_subscriptions table (migration 0008), web-push service, bell toggle UI, audit-logs admin page, cron trigger — 178 tests passing. All S1–S10 smoke tests passed (2026-03-20). |
 
 ### Feature Status
 
@@ -458,7 +458,7 @@ DELETE /api/push/subscribe           Remove push subscription by endpoint
 
 | Variable | When needed | Description |
 |----------|:-----------:|-------------|
-| `DATABASE_URL` | ✅ Now | PostgreSQL connection string |
+| `DATABASE_URL` | ✅ Now | PostgreSQL connection string — use Supabase **transaction-mode pooler** (port **6543**) for serverless/Vercel: `postgresql://postgres.PROJECT@aws-1-eu-west-1.pooler.supabase.com:6543/postgres` |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | ✅ Now | Clerk public key |
 | `CLERK_SECRET_KEY` | ✅ Now | Clerk secret key |
 | `CLERK_WEBHOOK_SECRET` | ✅ Now | Clerk webhook signing secret |
@@ -481,10 +481,10 @@ DELETE /api/push/subscribe           Remove push subscription by endpoint
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ W5 | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ W5 | Supabase service role key |
 | `CRON_SECRET` | ✅ W5 | Bearer token protecting `/api/cron/tracking` — generate with `openssl rand -hex 32` |
-| `VAPID_PUBLIC_KEY` | ✅ W9 | VAPID public key — generate with `npx web-push generate-vapid-keys` |
-| `VAPID_PRIVATE_KEY` | ✅ W9 | VAPID private key |
+| `VAPID_PUBLIC_KEY` | ✅ W9 | VAPID public key — generate with `npx web-push generate-vapid-keys`. Must be unpadded base64url (no `=`). |
+| `VAPID_PRIVATE_KEY` | ✅ W9 | VAPID private key — same format |
 | `VAPID_SUBJECT` | ✅ W9 | VAPID subject — e.g. `mailto:admin@wassalha.ma` |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ✅ W9 | Same as `VAPID_PUBLIC_KEY`, exposed to browser |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ✅ W9 | Same value as `VAPID_PUBLIC_KEY`, exposed to browser for push subscription |
 | `STRIPE_SECRET_KEY` | ⏳ Deferred | Stripe not supported in Morocco — migration to PayGate Africa planned |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ⏳ Deferred | Same as above |
 | `STRIPE_WEBHOOK_SECRET` | ⏳ Deferred | Same as above |

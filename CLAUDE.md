@@ -130,7 +130,7 @@ E2E Playwright (5 flow specs), Lighthouse CI (perf ≥ 80), next-safe CSP header
 
 ### 📊 Codebase Metrics
 
-**Current (W9 complete — 2026-03-18):**
+**Current (W9 complete + all smoke tests passed — 2026-03-20):**
 - Drizzle schema: 11 tables live — users, carriers, carrier_zones, carrier_pricing, shipments, commissions, tracking_events, feedback, notifications, audit_logs, push_subscriptions
 - Migrations: 9 applied (0000–0008)
 - API routes: 25 route files live (+push/subscribe, +push/vapid-public-key)
