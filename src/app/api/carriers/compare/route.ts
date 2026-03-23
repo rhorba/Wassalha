@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   // (e.g. a Google Places variant not yet in city-zones.json) we show empty
   // results rather than a blocking error.
   if ("error" in outcome) {
-    return NextResponse.json({ results: [], cityNotFound: true });
+    return NextResponse.json({ results: [], unavailable: [], cityNotFound: true });
   }
 
   return NextResponse.json(outcome);

@@ -2,7 +2,9 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { carriers } from "@/lib/db/schema";
 import { cityToCarrierZoneCode, isCityKnown } from "@/lib/carriers/city-zones";
-import type { CompareInput, CarrierResult } from "@/lib/validations/carriers";
+import { getAdapter } from "@/lib/carriers/adapters";
+import type { AramexAdapter } from "@/lib/carriers/adapters/aramex";
+import type { CompareInput, CarrierResult, UnavailableCarrier } from "@/lib/validations/carriers";
 
 const MODE_WEIGHTS = {
   cheapest: { cost: 0.7, speed: 0.2, reliability: 0.1 },
@@ -14,28 +16,27 @@ export type CompareError =
   | { code: "CITY_NOT_FOUND"; field: "originCity" | "destinationCity" }
   | { code: "NO_RESULTS" };
 
+function raceTimeout(ms: number): Promise<never> {
+  return new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("timeout")), ms),
+  );
+}
+
 export async function compareCarriers(
-  input: CompareInput
-): Promise<{ results: CarrierResult[] } | { error: CompareError }> {
-  // 1. Validate destination city exists in static map
+  input: CompareInput,
+): Promise<{ results: CarrierResult[]; unavailable: UnavailableCarrier[] } | { error: CompareError }> {
   if (!isCityKnown(input.destinationCity)) {
     return { error: { code: "CITY_NOT_FOUND", field: "destinationCity" } };
   }
 
-  // 2. Fetch all active carriers with their zones + pricing
   const activeCarriers = await db.query.carriers.findMany({
     where: eq(carriers.isActive, true),
-    with: {
-      zones: {
-        with: { pricing: true },
-      },
-    },
+    with: { zones: { with: { pricing: true } } },
   });
 
-  // 3. For each carrier, resolve its zone code for the destination city,
-  //    find the matching zone + pricing tier by weight.
   type RawResult = {
     carrierId:        string;
+    slug:             string;
     name:             string;
     logoUrl:          string | null;
     reliabilityScore: number;
@@ -49,53 +50,74 @@ export async function compareCarriers(
   const matched: RawResult[] = [];
 
   for (const carrier of activeCarriers) {
-    // Look up this carrier's zone code for the destination city
     const zoneCode = cityToCarrierZoneCode(input.destinationCity, carrier.slug);
-
-    // Carrier doesn't cover this city — skip silently
     if (!zoneCode) continue;
-
-    // Find the zone row matching the resolved code
     const zone = carrier.zones.find((z) => z.zoneCode === zoneCode);
     if (!zone) continue;
-
-    // Find pricing tier: weightMinG <= input.weightG AND (weightMaxG IS NULL OR weightMaxG >= input.weightG)
     const tier = zone.pricing.find(
       (p) =>
         p.weightMinG <= input.weightG &&
-        (p.weightMaxG === null || p.weightMaxG >= input.weightG)
+        (p.weightMaxG === null || p.weightMaxG >= input.weightG),
     );
-
-    // No tier matches this weight — skip silently
     if (!tier) continue;
-
-    const flatMad        = tier.codFeeMad ?? 0;
-    const percentFeeRate = tier.codFeePercent ? parseFloat(tier.codFeePercent) : 0;
 
     matched.push({
       carrierId:        carrier.id,
+      slug:             carrier.slug,
       name:             carrier.name,
       logoUrl:          carrier.logoUrl,
       reliabilityScore: carrier.reliabilityScore,
       priceMad:         tier.priceMad,
-      codFeeMad:        flatMad,
-      codFeePercent:    percentFeeRate,
+      codFeeMad:        tier.codFeeMad ?? 0,
+      codFeePercent:    tier.codFeePercent ? parseFloat(tier.codFeePercent) : 0,
       deliveryDaysMin:  tier.deliveryDaysMin,
       deliveryDaysMax:  tier.deliveryDaysMax,
     });
   }
 
-  if (matched.length === 0) return { results: [] };
+  if (matched.length === 0) return { results: [], unavailable: [] };
 
-  // 4. Compute total costs (needed for normalization)
-  const costs = matched.map(
+  // ── Hybrid pricing: live rate for Aramex, static DB for others ──────────────
+  const unavailable: UnavailableCarrier[] = [];
+  const priced: RawResult[] = [];
+
+  await Promise.all(
+    matched.map(async (r) => {
+      if (r.slug === "aramex") {
+        try {
+          const adapter = getAdapter("aramex") as AramexAdapter;
+          const { totalMad } = await Promise.race([
+            adapter.calculateRate(
+              input.originCity,
+              input.destinationCity,
+              input.weightG,
+              input.codAmountMad,
+            ),
+            raceTimeout(3000),
+          ]);
+          // Override DB priceMad with live rate (Aramex returns MAD float → centimes)
+          priced.push({ ...r, priceMad: Math.round(totalMad * 100) });
+        } catch {
+          // Timeout or SOAP error — exclude Aramex from ranked results
+          unavailable.push({ slug: r.slug, name: r.name, reason: "rate_unavailable" });
+        }
+      } else {
+        priced.push(r);
+      }
+    }),
+  );
+
+  if (priced.length === 0) return { results: [], unavailable };
+
+  // ── Ranking ────────────────────────────────────────────────────────────────
+  const costs = priced.map(
     (r) =>
       r.priceMad +
       r.codFeeMad +
-      Math.round((r.codFeePercent / 100) * input.codAmountMad)
+      Math.round((r.codFeePercent / 100) * input.codAmountMad),
   );
-  const speeds    = matched.map((r) => r.deliveryDaysMin);
-  const relScores = matched.map((r) => r.reliabilityScore);
+  const speeds    = priced.map((r) => r.deliveryDaysMin);
+  const relScores = priced.map((r) => r.reliabilityScore);
 
   const minCost  = Math.min(...costs);
   const maxCost  = Math.max(...costs);
@@ -104,17 +126,15 @@ export async function compareCarriers(
   const minRel   = Math.min(...relScores);
   const maxRel   = Math.max(...relScores);
 
-  // Min-max normalize: returns 0–1. invert=true means lower raw value → higher score.
   const normalize = (val: number, min: number, max: number, invert: boolean): number => {
-    if (max === min) return 1; // all same — no differentiation
+    if (max === min) return 1;
     const n = (val - min) / (max - min);
     return invert ? 1 - n : n;
   };
 
   const weights = MODE_WEIGHTS[input.mode];
 
-  // 5. Score each carrier and build output
-  const results: CarrierResult[] = matched.map((r, i) => {
+  const results: CarrierResult[] = priced.map((r, i) => {
     const totalCost  = costs[i];
     const costScore  = normalize(totalCost, minCost, maxCost, true);
     const speedScore = normalize(r.deliveryDaysMin, minSpeed, maxSpeed, true);
@@ -129,6 +149,7 @@ export async function compareCarriers(
 
     return {
       carrierId:        r.carrierId,
+      slug:             r.slug,
       name:             r.name,
       logoUrl:          r.logoUrl,
       totalCostMad:     totalCost,
@@ -144,8 +165,6 @@ export async function compareCarriers(
     };
   });
 
-  // 6. Sort by score descending
   results.sort((a, b) => b.score - a.score);
-
-  return { results };
+  return { results, unavailable };
 }

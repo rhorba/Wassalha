@@ -1,60 +1,38 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { CarrierApiError } from "../../types";
 
-const originalFetch = global.fetch;
+// Mock the SOAP utility so tests don't make real HTTP calls
+vi.mock("../../aramex-soap", () => ({
+  buildClientInfo: vi.fn(() => ""),
+  callAramex:      vi.fn(),
+}));
+
+import { callAramex } from "../../aramex-soap";
+import { AramexAdapter } from "../aramex";
+
+const adapter = new AramexAdapter();
 
 beforeEach(() => {
-  global.fetch = vi.fn();
-  delete process.env.ARAMEX_API_URL;
-  delete process.env.ARAMEX_USERNAME;
-});
-
-afterEach(() => {
-  global.fetch = originalFetch;
   vi.clearAllMocks();
 });
 
 describe("AramexAdapter.getTrackingStatus", () => {
-  it("throws SERVICE_UNAVAILABLE when credentials missing", async () => {
-    // Import fresh to pick up cleared env vars
-    const { AramexAdapter } = await import("../aramex");
-    const adapter = new AramexAdapter();
-    await expect(adapter.getTrackingStatus("TRK123")).rejects.toMatchObject({
-      code: "SERVICE_UNAVAILABLE",
+  it("returns empty array when SOAP response has no events", async () => {
+    vi.mocked(callAramex).mockResolvedValue({
+      HasErrors:       false,
+      TrackingResults: [],
     });
-  });
-
-  it("returns empty array when carrier returns no events", async () => {
-    process.env.ARAMEX_API_URL  = "https://sandbox.aramex.net";
-    process.env.ARAMEX_USERNAME = "testuser";
-
-    const { AramexAdapter } = await import("../aramex");
-    const adapter = new AramexAdapter();
-
-    vi.mocked(global.fetch).mockResolvedValue({
-      ok:   true,
-      json: async () => ({
-        HasErrors:       false,
-        TrackingResults: [{ Value: [] }],
-      }),
-    } as Response);
 
     const events = await adapter.getTrackingStatus("TRK123");
     expect(events).toHaveLength(0);
   });
 
   it("normalizes Aramex status codes to shipment status enum", async () => {
-    process.env.ARAMEX_API_URL  = "https://sandbox.aramex.net";
-    process.env.ARAMEX_USERNAME = "testuser";
-
-    const { AramexAdapter } = await import("../aramex");
-    const adapter = new AramexAdapter();
-
-    vi.mocked(global.fetch).mockResolvedValue({
-      ok:   true,
-      json: async () => ({
-        HasErrors: false,
-        TrackingResults: [
-          {
+    vi.mocked(callAramex).mockResolvedValue({
+      HasErrors:       false,
+      TrackingResults: [
+        {
+          KeyValueOfstringArrayOfTrackingResultmFAkxlpY: {
             Value: [
               {
                 UpdateCode:        "SH005",
@@ -70,9 +48,9 @@ describe("AramexAdapter.getTrackingStatus", () => {
               },
             ],
           },
-        ],
-      }),
-    } as Response);
+        },
+      ],
+    });
 
     const events = await adapter.getTrackingStatus("TRK123");
     expect(events).toHaveLength(2);
@@ -82,20 +60,36 @@ describe("AramexAdapter.getTrackingStatus", () => {
     expect(events[1].carrierRawStatus).toBe("SH006");
   });
 
-  it("throws AUTH_FAILED on 401 response", async () => {
-    process.env.ARAMEX_API_URL  = "https://sandbox.aramex.net";
-    process.env.ARAMEX_USERNAME = "testuser";
+  it("maps unknown status code to in_transit", async () => {
+    vi.mocked(callAramex).mockResolvedValue({
+      HasErrors:       false,
+      TrackingResults: [
+        {
+          KeyValueOfstringArrayOfTrackingResultmFAkxlpY: {
+            Value: [
+              {
+                UpdateCode:        "SH999",
+                UpdateDescription: "Unknown status",
+                UpdateDateTime:    "2026-03-15T09:00:00Z",
+              },
+            ],
+          },
+        },
+      ],
+    });
 
-    const { AramexAdapter } = await import("../aramex");
-    const adapter = new AramexAdapter();
+    const events = await adapter.getTrackingStatus("TRK123");
+    expect(events[0].status).toBe("in_transit");
+    expect(events[0].carrierRawStatus).toBe("SH999");
+  });
 
-    vi.mocked(global.fetch).mockResolvedValue({
-      ok:     false,
-      status: 401,
-    } as Response);
+  it("propagates CarrierApiError when callAramex throws", async () => {
+    vi.mocked(callAramex).mockRejectedValue(
+      new CarrierApiError("SERVICE_UNAVAILABLE", "Aramex HTTP 503"),
+    );
 
     await expect(adapter.getTrackingStatus("TRK123")).rejects.toMatchObject({
-      code: "AUTH_FAILED",
+      code: "SERVICE_UNAVAILABLE",
     });
   });
 });

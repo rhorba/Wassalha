@@ -34,6 +34,20 @@ export default async function ShipmentDetailPage({ params }: Props) {
         <LiveStatusBadge shipmentId={shipment.id} initialStatus={shipment.status} />
       </div>
 
+      {/* Download label — Aramex shipments only */}
+      {shipment.carrier.slug === "aramex" && shipment.carrierTrackingNumber && (
+        <div className="mb-8">
+          <a
+            href={`/api/shipments/${shipment.id}/label`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Download Waybill Label
+          </a>
+        </div>
+      )}
+
       {/* Shipment info */}
       <div className="mb-8 space-y-1 rounded-lg border p-4 text-sm">
         <p><span className="text-gray-500">Carrier:</span> {shipment.carrier.name}</p>

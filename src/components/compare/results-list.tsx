@@ -3,16 +3,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CarrierResultCard } from "@/components/compare/carrier-result-card";
-import type { CarrierResult, CompareInput } from "@/lib/validations/carriers";
+import type { CarrierResult, UnavailableCarrier, CompareInput } from "@/lib/validations/carriers";
 
 type SortKey = "score" | "totalCostMad" | "deliveryDaysMin";
 
 interface ResultsListProps {
   results:      CarrierResult[];
   compareInput: CompareInput;
+  unavailable?: UnavailableCarrier[];
 }
 
-export function ResultsList({ results, compareInput }: ResultsListProps) {
+export function ResultsList({ results, compareInput, unavailable }: ResultsListProps) {
   const [sortKey, setSortKey] = useState<SortKey>("score");
 
   if (results.length === 0) {
@@ -62,6 +63,22 @@ export function ResultsList({ results, compareInput }: ResultsListProps) {
           />
         ))}
       </div>
+
+      {unavailable && unavailable.length > 0 && (
+        <div className="mt-4 space-y-2">
+          {unavailable.map((c) => (
+            <div
+              key={c.slug}
+              className="rounded-lg border border-dashed p-4 opacity-50"
+            >
+              <p className="text-sm font-medium text-muted-foreground">{c.name}</p>
+              <p className="text-xs text-muted-foreground">
+                Rate unavailable — try again later
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

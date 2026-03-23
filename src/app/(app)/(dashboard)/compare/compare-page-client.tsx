@@ -5,10 +5,11 @@ import { CompareForm } from "@/components/compare/compare-form";
 import { ResultsList } from "@/components/compare/results-list";
 import { useCompare } from "@/hooks/use-compare";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import type { CarrierResult, CompareInput } from "@/lib/validations/carriers";
+import type { CarrierResult, UnavailableCarrier, CompareInput } from "@/lib/validations/carriers";
 
 export function ComparePageClient() {
   const [results, setResults]           = useState<CarrierResult[] | null>(null);
+  const [unavailable, setUnavailable]   = useState<UnavailableCarrier[]>([]);
   const [cityNotFound, setCityNotFound] = useState(false);
   const [lastInput, setLastInput]       = useState<CompareInput | null>(null);
   const compare                         = useCompare();
@@ -25,6 +26,7 @@ export function ComparePageClient() {
           compare.mutate(data, {
             onSuccess: (res) => {
               setResults(res.results);
+              setUnavailable(res.unavailable ?? []);
               setCityNotFound(res.cityNotFound ?? false);
             },
           });
@@ -42,7 +44,7 @@ export function ComparePageClient() {
       )}
 
       {results !== null && !cityNotFound && lastInput && (
-        <ResultsList results={results} compareInput={lastInput} />
+        <ResultsList results={results} compareInput={lastInput} unavailable={unavailable} />
       )}
     </div>
   );

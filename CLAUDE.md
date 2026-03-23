@@ -209,9 +209,7 @@ wassalha/
 │   │       │   ├── vapid-public-key/route.ts  # GET VAPID public key (auth required)
 │   │       │   └── subscribe/route.ts         # POST upsert + DELETE remove subscription
 │   │       ├── cron/tracking/route.ts # Tracking poller (daily on Vercel Hobby) ✅
-│   │       ├── mock-aramex/           # Local mock for Aramex API (dev only) ✅
-│   │       │   ├── v1/shipping/shipments/create/route.ts
-│   │       │   └── v1/tracking/shipments/track/route.ts
+│   │       │   # Mock Aramex routes removed (W10) — real SOAP adapter uses Aramex staging endpoints
 │   │       ├── users/me/route.ts      # GET + PATCH user profile ✅
 │   │       ├── feedback/route.ts      # POST submit feedback (auth + Zod) ✅
 │   │       └── webhooks/
@@ -386,7 +384,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIza...
 RESEND_API_KEY=re_...
 RESEND_FROM_EMAIL=Wassalha <onboarding@resend.dev>
 
-# Carrier APIs (⏳ DEFERRED — requires carrier partnership contracts. Aramex mock used for beta.)
+# Carrier APIs — Aramex: real SOAP adapter (W10 ✅). Others (Amana/CTM/Marocolis/Sendex): stubs, deferred pending contracts.
 AMANA_API_URL=https://api.amana.ma
 AMANA_API_KEY=
 AMANA_ACCOUNT_ID=

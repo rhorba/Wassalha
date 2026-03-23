@@ -113,7 +113,7 @@ describe("compareCarriers — results", () => {
       codAmountMad: 0,
       mode: "balanced",
     });
-    expect(result).toEqual({ results: [] });
+    expect(result).toMatchObject({ results: [] });
   });
 
   it("ranks cheapest carrier first in cheapest mode", async () => {
@@ -197,7 +197,7 @@ describe("compareCarriers — results", () => {
       mode: "balanced",
     });
 
-    expect(result).toEqual({ results: [] });
+    expect(result).toMatchObject({ results: [] });
   });
 
   it("all same signal values give everyone score=1 per signal", async () => {

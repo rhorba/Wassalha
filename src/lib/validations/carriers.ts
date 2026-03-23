@@ -76,6 +76,7 @@ export type CompareInput = z.infer<typeof CompareInputSchema>;
 
 export type CarrierResult = {
   carrierId:        string;
+  slug:             string;
   name:             string;
   logoUrl:          string | null;
   totalCostMad:     number;
@@ -88,4 +89,10 @@ export type CarrierResult = {
     percentFee: number;
     total:      number;
   };
+};
+
+export type UnavailableCarrier = {
+  slug:   string;
+  name:   string;
+  reason: "rate_unavailable";
 };

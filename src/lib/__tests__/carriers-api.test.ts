@@ -33,11 +33,13 @@ type AuthResult = Awaited<ReturnType<typeof auth>>;
 
 const mockAdminAuth = () =>
   vi.mocked(auth).mockResolvedValue({
+    userId:        "admin-user-id",
     sessionClaims: { metadata: { role: "admin" } },
   } as unknown as AuthResult);
 
 const mockRetailerAuth = () =>
   vi.mocked(auth).mockResolvedValue({
+    userId:        "retailer-user-id",
     sessionClaims: { metadata: { role: "retailer" } },
   } as unknown as AuthResult);
 

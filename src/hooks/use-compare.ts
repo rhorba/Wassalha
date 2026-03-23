@@ -1,10 +1,11 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import type { CompareInput, CarrierResult } from "@/lib/validations/carriers";
+import type { CompareInput, CarrierResult, UnavailableCarrier } from "@/lib/validations/carriers";
 
 type CompareResponse = {
-  results: CarrierResult[];
+  results:      CarrierResult[];
+  unavailable:  UnavailableCarrier[];
   cityNotFound?: boolean;
 };
 

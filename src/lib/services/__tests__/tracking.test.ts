@@ -28,7 +28,7 @@ describe("pollActiveShipments", () => {
 
   it("returns { processed: 0, errors: 0 } when no active shipments", async () => {
     const result = await pollActiveShipments();
-    expect(result).toEqual({ processed: 0, errors: 0 });
+    expect(result).toMatchObject({ processed: 0, errors: 0 });
   });
 
   it("counts errors without throwing when adapter fails", async () => {

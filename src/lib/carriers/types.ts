@@ -35,6 +35,14 @@ export interface CarrierAdapter {
   slug: string;
   createShipment(input: CreateShipmentInput): Promise<CarrierShipmentResult>;
   getTrackingStatus(trackingNumber: string): Promise<TrackingEvent[]>;
+  // Optional — only implemented by carriers with live rate APIs (currently Aramex only).
+  // If absent, comparison engine falls back to static DB pricing.
+  calculateRate?(
+    originCity:   string,
+    destCity:     string,
+    weightG:      number,
+    codAmountMad: number,
+  ): Promise<{ totalMad: number }>;
 }
 
 // Thrown by adapters on carrier API failure — caught by booking service
