@@ -19,7 +19,7 @@ Focus: Type-safety, performance, bilingual support (French/Darija), RBAC securit
 - **Auth**: Clerk (hosted UI + publicMetadata role + JWT template). NextAuth dropped.
 - **Real-time**: Supabase Realtime (Phase 5 — implemented). postgres_changes for tracking_events INSERT + polling fallback for shipments UPDATE.
 - **Maps**: Google Maps API (address autocomplete, Morocco-restricted). Mapbox dropped — not needed.
-- **Payments**: ⏳ Deferred — Stripe removed (not available for Morocco merchants). PayGate Africa is the planned replacement but requires vetting. Beta uses manual invoice confirmation. Do NOT implement payment processor until researched.
+- **Payments**: Stripe TEST account in production — real Stripe prod unavailable for Morocco merchants. Using test mode keys (`sk_test_...`) in Vercel env. Invoice generation + webhook work end-to-end but process no real money. Do NOT switch to live keys until a Morocco-compatible processor is confirmed (PayGate Africa under review). Remaining: carrier API keys for Amana/CTM/Marocolis/Sendex (pending signed contracts).
 - **Email**: Resend (Phase 4 — booking confirmation). Lazy-initialized, skipped if key missing.
 - **Notifications**: WhatsApp Business API (wired in `bookings.ts`, skips if credentials missing. ⏭ Meta account restricted — appeal submitted 2026-03-18). Web Push (W9 ✅ — VAPID, `push_subscriptions` table, bell toggle in dashboard, triggered from cron poller on status change).
 - **Deployment**: Vercel (app — https://wassalha.vercel.app). Connected to `main` branch.
@@ -101,6 +101,14 @@ E2E Playwright (5 flow specs), Lighthouse CI (perf ≥ 80), next-safe CSP header
 
 **Smoke test fixes (2026-03-20):** (1) `DATABASE_URL` switched to Supabase transaction-mode pooler (port 6543) — session mode exhausted under concurrent Vercel lambdas. (2) VAPID keys on Vercel had `=` padding — corrected via `vercel env add`. Added `toBase64url()` normalization in `web-push.ts`.
 
+### ✅ W10 — Aramex Real SOAP Integration (2026-04-12)
+
+Replaced the mock Aramex adapter with a live SOAP adapter (`fast-xml-parser`). Hybrid pricing in the comparison engine — Aramex rates fetched live (3s timeout + graceful exclusion), all other carriers use static DB pricing. New `GET /api/shipments/[id]/label` route for on-demand Aramex shipping label download. Mock routes (`/api/mock-aramex/`) deleted. **Complete. Tests passing.**
+
+### ✅ W11 — Bulk Compare + Import (2026-04-12)
+
+"Bulk Import" tab on the compare page — upload CSV or Excel (up to 50 rows), run a single batch comparison via `POST /api/carriers/compare/bulk` (sequential per row, partial failures inline, 3 req/min rate limit), expandable results table showing all carriers per row, per-row "Book" button + checkbox bulk select + confirmation dialog, CSV export of results. SheetJS (`xlsx`) dynamically imported — zero bundle impact. **Complete. 196 tests passing (18 new). Manual test plan at `docs/plans/2026-04-12-bulk-compare/manual-test.md`.**
+
 ---
 
 ### 🎯 Feature Status
@@ -126,23 +134,25 @@ E2E Playwright (5 flow specs), Lighthouse CI (perf ≥ 80), next-safe CSP header
 | Web Push Notifications | ✅ | ✅ | W9 — VAPID, push_subscriptions, bell toggle, cron trigger |
 | Notifications Log | ✅ | — | W9 — notifications table, logs email/whatsapp/web_push per shipment |
 | Audit Trail | ✅ | ✅ | W9 — audit_logs table + /admin/audit-logs RSC page |
+| Aramex Live SOAP | ✅ | ✅ | W10 — real SOAP adapter, hybrid pricing, label download |
+| Bulk Compare + Import | ✅ | ✅ | W11 — CSV/Excel upload, batch comparison, bulk booking, CSV export |
 | Beta Launch (20 retailers) | ✅ | ✅ | Feedback loop active |
 
 ### 📊 Codebase Metrics
 
-**Current (W9 complete + all smoke tests passed — 2026-03-20):**
+**Current (W11 complete — 2026-04-12):**
 - Drizzle schema: 11 tables live — users, carriers, carrier_zones, carrier_pricing, shipments, commissions, tracking_events, feedback, notifications, audit_logs, push_subscriptions
 - Migrations: 9 applied (0000–0008)
-- API routes: 25 route files live (+push/subscribe, +push/vapid-public-key)
-- React components: 44 built (+push-toggle, +audit-logs page)
-- Tests: 178 passing (1 pre-existing rate-limit flaky)
+- API routes: 27 route files live (+compare/bulk, +shipments/[id]/label)
+- React components: 46 built (+bulk-import-panel, +dialog, +checkbox)
+- Tests: 196 passing (18 new bulk compare validation tests; 1 pre-existing rate-limit flaky)
 - Services: 9 (carriers, comparison, bookings, commission, tracking, analytics, billing, users, audit)
-- Hooks: 11 TanStack Query/browser hooks (+use-web-push)
+- Hooks: 12 TanStack Query/browser hooks (+use-bulk-compare)
 - Notification services: 3 (email, whatsapp, web-push)
 
 ---
 
-### 📦 Project Structure (actual — W9 complete)
+### 📦 Project Structure (actual — W11 complete)
 
 ```
 wassalha/
@@ -165,7 +175,7 @@ wassalha/
 │   │   │   │   ├── dashboard/page.tsx # Dashboard home (KPI cards + recent shipments)
 │   │   │   │   ├── compare/           # Carrier comparison ✅
 │   │   │   │   │   ├── page.tsx
-│   │   │   │   │   └── compare-page-client.tsx  # Pre-fills originCity from user profile
+│   │   │   │   │   └── compare-page-client.tsx  # Single/Bulk Import tabs
 │   │   │   │   ├── analytics/         # Analytics charts ✅
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── shipments/         # Shipments ✅
@@ -193,7 +203,8 @@ wassalha/
 │   │       │   ├── [id]/zones/[zoneId]/route.ts
 │   │       │   ├── [id]/zones/[zoneId]/pricing/route.ts
 │   │       │   ├── [id]/zones/[zoneId]/pricing/[pricingId]/route.ts
-│   │       │   └── compare/route.ts   # POST comparison engine (rate limited)
+│   │       │   ├── compare/route.ts   # POST comparison engine (rate limited)
+│   │       │   └── compare/bulk/route.ts  # POST bulk comparison — up to 50 rows ✅ W11
 │   │       ├── shipments/             # Booking ✅
 │   │       │   ├── route.ts           # POST book, GET list
 │   │       │   ├── [id]/route.ts      # GET single
@@ -216,8 +227,8 @@ wassalha/
 │   │           ├── clerk/route.ts     # Clerk user sync ✅
 │   │           └── stripe/route.ts    # Stripe invoice.paid → mark commissions paid ✅
 │   ├── components/
-│   │   ├── ui/                        # shadcn/ui primitives (17 components) ✅
-│   │   │   # accordion, badge, button, calendar, card, form, input, label,
+│   │   ├── ui/                        # shadcn/ui primitives (19 components) ✅
+│   │   │   # accordion, badge, button, calendar, card, checkbox, dialog, form, input, label,
 │   │   │   # popover, separator, sheet, sonner, table, tabs, textarea, toggle, toggle-group
 │   │   ├── carriers/                  # Carrier admin UI ✅
 │   │   │   ├── carrier-form.tsx
@@ -228,7 +239,8 @@ wassalha/
 │   │   │   ├── results-list.tsx
 │   │   │   ├── carrier-result-card.tsx
 │   │   │   ├── city-autocomplete.tsx
-│   │   │   └── mode-toggle.tsx
+│   │   │   ├── mode-toggle.tsx
+│   │   │   └── bulk-import-panel.tsx  # Bulk CSV/Excel import + results table ✅ W11
 │   │   ├── booking/                   # Booking sheet ✅
 │   │   │   ├── booking-sheet.tsx
 │   │   │   └── booking-form.tsx
