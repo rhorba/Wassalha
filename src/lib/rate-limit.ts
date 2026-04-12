@@ -19,9 +19,10 @@ function makeRatelimit(
 }
 
 export const ratelimit = {
-  compare: makeRatelimit(20, '1 m', 'rl:compare'),
-  booking: makeRatelimit(10, '1 m', 'rl:booking'),
-  billing: makeRatelimit(5, '1 m', 'rl:billing'),
+  compare:      makeRatelimit(20, '1 m', 'rl:compare'),
+  compareBulk:  makeRatelimit(3,  '1 m', 'rl:compare-bulk'),
+  booking:      makeRatelimit(10, '1 m', 'rl:booking'),
+  billing:      makeRatelimit(5,  '1 m', 'rl:billing'),
 }
 
 /**

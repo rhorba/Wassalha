@@ -96,3 +96,36 @@ export type UnavailableCarrier = {
   name:   string;
   reason: "rate_unavailable";
 };
+
+// ── Bulk comparison ────────────────────────────────────────────────────────────
+
+export const BulkCompareRowSchema = z.object({
+  rowIndex:        z.number().int().min(0),
+  label:           z.string().optional(),
+  originCity:      z.string().min(2, "Origin city required"),
+  destinationCity: z.string().min(2, "Destination city required"),
+  weightG:         z.coerce.number().int().min(1, "Weight must be at least 1g"),
+  codAmountMad:    z.coerce.number().int().min(0),
+  mode:            z.enum(["cheapest", "balanced", "fastest"]).optional(),
+});
+
+export const BulkCompareRequestSchema = z.object({
+  globalMode: z.enum(["cheapest", "balanced", "fastest"]).default("balanced"),
+  rows: z
+    .array(BulkCompareRowSchema)
+    .min(1, "At least 1 row required")
+    .max(50, "Max 50 rows per request"),
+});
+
+export type BulkCompareRow     = z.infer<typeof BulkCompareRowSchema>;
+export type BulkCompareRequest = z.infer<typeof BulkCompareRequestSchema>;
+
+export type BulkCompareResultRow = {
+  rowIndex:     number;
+  label:        string | undefined;
+  input:        BulkCompareRow;
+  bestCarrier:  CarrierResult | null;
+  allResults:   CarrierResult[];
+  cityNotFound: boolean;
+  error:        string | null;
+};
