@@ -35,9 +35,14 @@ export async function checkRateLimit(
   identifier: string,
 ): Promise<{ limited: boolean; retryAfter: number }> {
   if (!limiter) return { limited: false, retryAfter: 0 }
-  const { success, reset } = await limiter.limit(identifier)
-  return {
-    limited: !success,
-    retryAfter: Math.ceil((reset - Date.now()) / 1000),
+  try {
+    const { success, reset } = await limiter.limit(identifier)
+    return {
+      limited: !success,
+      retryAfter: Math.ceil((reset - Date.now()) / 1000),
+    }
+  } catch {
+    // Upstash unreachable (placeholder creds / network error) — fail open
+    return { limited: false, retryAfter: 0 }
   }
 }

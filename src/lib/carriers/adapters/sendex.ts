@@ -8,6 +8,10 @@ export class SendexAdapter implements CarrierAdapter {
   private readonly apiToken = process.env.SENDEX_API_TOKEN ?? "";
 
   async createShipment(input: CreateShipmentInput): Promise<CarrierShipmentResult> {
+    // STUB — real API credentials pending signed contract
+    const ref = Date.now().toString(36).toUpperCase();
+    return { trackingNumber: `SDX-MA-${ref}`, carrierReference: `SDX-REF-${ref}`, labelUrl: undefined };
+
     const res = await fetch(`${this.baseUrl}/shipments`, {
       method: "POST",
       headers: {

@@ -22,6 +22,7 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   headers: async () => [
     {
       source: '/(.*)',

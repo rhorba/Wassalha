@@ -8,6 +8,10 @@ export class CtmAdapter implements CarrierAdapter {
   private readonly apiKey  = process.env.CTM_API_KEY  ?? "";
 
   async createShipment(input: CreateShipmentInput): Promise<CarrierShipmentResult> {
+    // STUB — real API credentials pending signed contract
+    const ref = Date.now().toString(36).toUpperCase();
+    return { trackingNumber: `CTM-MA-${ref}`, carrierReference: `CTM-REF-${ref}` };
+
     const res = await fetch(`${this.baseUrl}/api/shipments`, {
       method: "POST",
       headers: {

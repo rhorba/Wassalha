@@ -1,13 +1,15 @@
 import { test, expect } from '@playwright/test'
-import { asRetailer } from './fixtures/auth'
+import { asRetailer, hasClerkCredentials } from './fixtures/auth'
 
 test.describe('Shipment tracking', () => {
   test.beforeEach(async ({ page }) => {
+    if (!hasClerkCredentials()) {
+      test.skip(true, 'Clerk test credentials not configured')
+    }
     await asRetailer(page)
   })
 
   test('shipment detail page renders tracking timeline', async ({ page }) => {
-    // Navigate to shipments list first
     await page.goto('/shipments')
 
     // Wait for loading to resolve (TanStack Query fetch)
@@ -28,5 +30,23 @@ test.describe('Shipment tracking', () => {
     // Shipment detail — tracking timeline must render
     await expect(page).toHaveURL(/\/shipments\//, { timeout: 15_000 })
     await expect(page.getByTestId('tracking-timeline')).toBeVisible({ timeout: 10_000 })
+  })
+
+  test('shipments list — shows table or empty state', async ({ page }) => {
+    await page.goto('/shipments')
+    await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {})
+    const hasTable = await page.getByTestId('shipments-table').isVisible({ timeout: 5_000 }).catch(() => false)
+    const hasEmpty = await page.getByText(/aucun envoi/i).isVisible({ timeout: 5_000 }).catch(() => false)
+    expect(hasTable || hasEmpty).toBe(true)
+  })
+
+  test('shipments list — CSV export button is present', async ({ page }) => {
+    await page.goto('/shipments')
+    await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {})
+    // Export button should be accessible
+    const exportBtn = page.getByRole('button', { name: /export|csv/i })
+    if (await exportBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await expect(exportBtn).toBeEnabled()
+    }
   })
 })

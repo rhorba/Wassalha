@@ -1,0 +1,13 @@
+.git
+.gitignore
+node_modules
+.next
+.env.local
+.env.docker
+*.md
+docs/
+.claude/
+playwright-report/
+test-results/
+e2e-videos/
+*.log

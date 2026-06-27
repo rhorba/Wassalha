@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { asAdmin } from './fixtures/auth'
+import { asAdmin, hasClerkCredentials } from './fixtures/auth'
 
 test.describe('Admin billing', () => {
   test.beforeEach(async ({ page }) => {
+    if (!hasClerkCredentials()) {
+      test.skip(true, 'Clerk test credentials not configured')
+    }
     await asAdmin(page)
   })
 
@@ -13,5 +16,22 @@ test.describe('Admin billing', () => {
     await expect(
       page.getByTestId('billing-table').or(page.getByText(/aucune commission/i))
     ).toBeVisible({ timeout: 10_000 })
+  })
+
+  test('admin can view carriers management page', async ({ page }) => {
+    await page.goto('/admin/carriers')
+    await expect(page.getByRole('heading', { name: /carriers/i })).toBeVisible({ timeout: 10_000 })
+    // Table with carriers or add button
+    await expect(
+      page.getByTestId('carrier-table').or(page.getByRole('button', { name: /add carrier/i })).or(page.locator('table'))
+    ).toBeVisible({ timeout: 10_000 })
+  })
+
+  test('admin can view audit logs', async ({ page }) => {
+    await page.goto('/admin/audit-logs')
+    // Page renders without 500
+    const body = page.locator('body')
+    await expect(body).toBeVisible()
+    await expect(page.getByText(/journal|audit|activité/i).first()).toBeVisible({ timeout: 10_000 })
   })
 })

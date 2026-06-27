@@ -24,6 +24,10 @@ export class MarocolisAdapter implements CarrierAdapter {
   }
 
   async createShipment(input: CreateShipmentInput): Promise<CarrierShipmentResult> {
+    // STUB — real API credentials pending signed contract
+    const ref = Date.now().toString(36).toUpperCase();
+    return { trackingNumber: `MRC-MA-${ref}`, carrierReference: `MRC-REF-${ref}` };
+
     const token = await this.getToken();
 
     const res = await fetch(`${this.baseUrl}/api/v1/colis`, {
