@@ -95,12 +95,28 @@ async function parseFile(file: File): Promise<RawRow[]> {
   }
 
   if (ext === "xlsx" || ext === "xls") {
-    const { read, utils } = await import("xlsx");
-    const buffer = await file.arrayBuffer();
-    const wb     = read(buffer, { type: "array" });
-    const ws     = wb.Sheets[wb.SheetNames[0]!]!;
-    const rows   = utils.sheet_to_json<RawRow>(ws, { defval: "" });
-    return rows;
+    const { Workbook } = await import("exceljs");
+    const wb = new Workbook();
+    await wb.xlsx.load(await file.arrayBuffer());
+    const ws = wb.worksheets[0];
+    if (!ws) return [];
+
+    const allRows: string[][] = [];
+    ws.eachRow((row) => {
+      const vals = row.values as unknown[];
+      allRows.push(vals.slice(1).map((v) => {
+        if (v == null) return "";
+        if (typeof v === "object" && v !== null && "result" in v)
+          return String((v as { result?: unknown }).result ?? "");
+        return String(v);
+      }));
+    });
+
+    const [headers, ...dataRows] = allRows;
+    if (!headers) return [];
+    return dataRows.map((row) =>
+      Object.fromEntries(headers.map((h, i) => [h, row[i] ?? ""]))
+    );
   }
 
   throw new Error("Unsupported file type — use .csv, .xlsx, or .xls");
