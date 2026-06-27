@@ -6,6 +6,7 @@
 
 # testing
 /coverage
+/e2e/.clerk-setup-ok
 
 # next.js
 /.next/
